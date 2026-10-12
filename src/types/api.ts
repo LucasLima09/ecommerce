@@ -1,0 +1,1 @@
+export type ErroApi = { erro: string };
