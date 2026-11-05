@@ -1,5 +1,6 @@
 import AuthButton from "@/components/authButton";
 import AuthInput from "@/components/authInput";
+import { registerUser } from "@/service/authService";
 import { Image } from "expo-image";
 import { Link } from "expo-router";
 import { useState } from "react";
@@ -12,8 +13,8 @@ export default function RegisterScreen() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [loading, setLoading] = useState(false);
 
-    function handleRegister() {
-        // TODO: validar campos, chamar registerUser, tratar erros e controlar o loading
+    async function handleRegister() {
+        await registerUser(email, password)
     }
 
     return (

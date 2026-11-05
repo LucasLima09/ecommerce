@@ -1,5 +1,6 @@
 import AuthButton from "@/components/authButton";
 import AuthInput from "@/components/authInput";
+import { loginUser } from "@/service/authService";
 import { Image } from "expo-image";
 import { Link } from "expo-router";
 import { useState } from "react";
@@ -11,8 +12,8 @@ export default function LoginScreen() {
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
 
-    function handleLogin() {
-        // TODO: chamar loginUser, tratar erros e controlar o loading
+    async function handleLogin() {
+        await loginUser(email, password)
     }
 
     return (
