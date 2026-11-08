@@ -1,19 +1,44 @@
 import AuthButton from "@/components/authButton";
 import AuthInput from "@/components/authInput";
 import { loginUser } from "@/service/authService";
+import { getMensagemErroAuth } from "@/utils/errosFirebase";
+import { validarEmail, validarSenha } from "@/utils/validacoes";
 import { Image } from "expo-image";
 import { Link } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+type Erros = { email?: string; password?: string; geral?: string };
+
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
+    const [erros, setErros] = useState<Erros>({});
+
+    function validar(): boolean {
+        const novosErros: Erros = {
+            email: validarEmail(email),
+            // no login não exige mínimo: só verifica se foi preenchida
+            password: validarSenha(password, { minimo: false }),
+        };
+        setErros(novosErros);
+        return !novosErros.email && !novosErros.password;
+    }
 
     async function handleLogin() {
-        await loginUser(email, password)
+        if (loading || !validar()) return;
+
+        setLoading(true);
+        try {
+            await loginUser(email.trim(), password);
+            // sucesso: o Stack.Protected redireciona sozinho para (tabs)
+        } catch (error) {
+            setErros({ geral: getMensagemErroAuth(error) });
+        } finally {
+            setLoading(false);
+        }
     }
 
     return (
@@ -44,9 +69,14 @@ export default function LoginScreen() {
                             icon="mail-outline"
                             placeholder="seu@email.com"
                             value={email}
-                            onChangeText={setEmail}
+                            onChangeText={(text) => {
+                                setEmail(text);
+                                setErros((e) => ({ ...e, email: undefined, geral: undefined }));
+                            }}
+                            error={erros.email}
                             keyboardType="email-address"
                             autoComplete="email"
+                            editable={!loading}
                         />
 
                         <AuthInput
@@ -54,10 +84,23 @@ export default function LoginScreen() {
                             icon="lock-closed-outline"
                             placeholder="Sua senha"
                             value={password}
-                            onChangeText={setPassword}
+                            onChangeText={(text) => {
+                                setPassword(text);
+                                setErros((e) => ({ ...e, password: undefined, geral: undefined }));
+                            }}
+                            error={erros.password}
                             secureTextEntry
                             autoComplete="password"
+                            editable={!loading}
+                            returnKeyType="go"
+                            onSubmitEditing={handleLogin}
                         />
+
+                        {!!erros.geral && (
+                            <Text style={styles.erroGeral} accessibilityRole="alert">
+                                {erros.geral}
+                            </Text>
+                        )}
 
                         <AuthButton title="Entrar" onPress={handleLogin} loading={loading} />
                     </View>
@@ -108,6 +151,11 @@ const styles = StyleSheet.create({
     },
     form: {
         gap: 16,
+    },
+    erroGeral: {
+        fontSize: 14,
+        color: "#FF3B30",
+        textAlign: "center",
     },
     footer: {
         flexDirection: "row",
