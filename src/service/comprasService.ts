@@ -1,17 +1,22 @@
-import apiClient from "../api/apiClient"
-import { Compra } from "../types/compra"
+import apiClient from "@/api/apiClient";
+import { Compra, FormaPagamento, NovaCompra } from "@/types/compra";
 
-export async function finalizarCompra(compra: Compra) {
-    const response = await apiClient.post(`/compras`, compra)
-    return response.data
+export async function finalizarCompra(compra: NovaCompra): Promise<Compra> {
+    const { data } = await apiClient.post<Compra>("/compras", compra);
+    return data;
 }
 
-export async function getCompras(userId: string) {
-    const response = await apiClient.get(`/compras?usuarioId=${userId}`)
-    return response.data
+export async function getCompras(usuarioId: string): Promise<Compra[]> {
+    const { data } = await apiClient.get<Compra[]>("/compras", { params: { usuarioId } });
+    return data;
 }
 
-export async function getComprasDetalhes(compraId: string) {
-    const response = await apiClient.get(`/compras/${compraId}`)
-    return response.data
+export async function getCompraById(compraId: Compra["id"]): Promise<Compra> {
+    const { data } = await apiClient.get<Compra>(`/compras/${compraId}`);
+    return data;
+}
+
+export async function getFormasPagamento(): Promise<FormaPagamento[]> {
+    const { data } = await apiClient.get<FormaPagamento[]>("/formas-pagamento");
+    return data;
 }

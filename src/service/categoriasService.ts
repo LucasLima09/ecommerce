@@ -1,6 +1,7 @@
-import apiClient from "../api/apiClient";
+import apiClient from "@/api/apiClient";
+import { Categoria } from "@/types/produto";
 
-export async function getCategorias() {
-    const response = await apiClient.get("/categorias");
-    return response.data;
+export async function getCategorias(): Promise<Categoria[]> {
+    const { data } = await apiClient.get<Categoria[]>("/categorias");
+    return data;
 }

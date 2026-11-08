@@ -1,10 +1,8 @@
-// Import the functions you need from the SDKs you need
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getAuth, getReactNativePersistence, initializeAuth } from "firebase/auth";
+import { Platform } from "react-native";
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyDljKr0U5wBUfR5LcVhgheGALjz9thR7zk",
     authDomain: "ecommerce-a15b9.firebaseapp.com",
@@ -14,6 +12,12 @@ const firebaseConfig = {
     appId: "1:387803348393:web:8093279153b1f4c3a0d8b8"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+
+// Por padrão, no React Native o Firebase guarda a sessão só na memória
+// (o usuário teria que logar de novo toda vez que o app fecha).
+// Com initializeAuth + AsyncStorage a sessão fica salva no dispositivo.
+// No web o getAuth já persiste sozinho (IndexedDB do navegador).
+export const auth = Platform.OS === "web"
+    ? getAuth(app)
+    : initializeAuth(app, { persistence: getReactNativePersistence(AsyncStorage) });

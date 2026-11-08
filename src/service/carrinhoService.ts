@@ -1,22 +1,32 @@
-import apiClient from "../api/apiClient";
-import { ItemCarrinho } from "../types/carrinho";
+import apiClient from "@/api/apiClient";
+import { AdicionarItemCarrinho, AtualizarItemCarrinho, Carrinho } from "@/types/carrinho";
+import { Produto } from "@/types/produto";
 
-export async function getCarrinho(userId: string) {
-    const response = await apiClient.get(`/carrinho/${userId}`);
-    return response.data;
+export async function getCarrinho(usuarioId: string): Promise<Carrinho> {
+    const { data } = await apiClient.get<Carrinho>(`/carrinho/${usuarioId}`);
+    return data;
 }
 
-export async function addItemCarrinho(userId: string, item: ItemCarrinho) {
-    const response = await apiClient.post(`/carrinho/${userId}/items`, item);
-    return response.data;
+export async function addItemCarrinho(usuarioId: string, item: AdicionarItemCarrinho): Promise<Carrinho> {
+    const { data } = await apiClient.post<Carrinho>(`/carrinho/${usuarioId}/itens`, item);
+    return data;
 }
 
-export async function editarItemCarrinho(userId: string, produtoId: string, item: ItemCarrinho) {
-    const response = await apiClient.put(`/carrinho/${userId}/items/${produtoId}`, item);
-    return response.data;
+export async function editarItemCarrinho(
+    usuarioId: string,
+    produtoId: Produto["id"],
+    item: AtualizarItemCarrinho,
+): Promise<Carrinho> {
+    const { data } = await apiClient.put<Carrinho>(`/carrinho/${usuarioId}/itens/${produtoId}`, item);
+    return data;
 }
 
-export async function removerItemCarrinho(userId: string, produtoId: string) {
-    const response = await apiClient.delete(`/carrinho/${userId}/items/${produtoId}`);
-    return response.data;
+export async function removerItemCarrinho(usuarioId: string, produtoId: Produto["id"]): Promise<Carrinho> {
+    const { data } = await apiClient.delete<Carrinho>(`/carrinho/${usuarioId}/itens/${produtoId}`);
+    return data;
+}
+
+export async function limparCarrinho(usuarioId: string): Promise<Carrinho> {
+    const { data } = await apiClient.delete<Carrinho>(`/carrinho/${usuarioId}`);
+    return data;
 }
