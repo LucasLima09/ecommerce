@@ -1,4 +1,5 @@
 import { Produto } from "@/types/produto";
+import { formatarPreco } from "@/utils/formatarPreco";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Image } from "expo-image";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -7,13 +8,6 @@ type ProdutoCardProps = {
     produto: Produto;
     onAddToCart?: (produto: Produto) => void;
 };
-
-function formatPrice(centavos: number) {
-    return (centavos / 100).toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-    });
-}
 
 export default function ProdutoCard({ produto, onAddToCart }: ProdutoCardProps) {
     const semEstoque = produto.estoque <= 0;
@@ -37,7 +31,7 @@ export default function ProdutoCard({ produto, onAddToCart }: ProdutoCardProps) 
                 </Text>
 
                 <View style={styles.footer}>
-                    <Text style={styles.price}>{formatPrice(produto.preco)}</Text>
+                    <Text style={styles.price}>{formatarPreco(produto.preco)}</Text>
 
                     <Pressable
                         style={({ pressed }) => [

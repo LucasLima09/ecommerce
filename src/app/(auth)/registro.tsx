@@ -1,4 +1,4 @@
-import AuthButton from "@/components/authButton";
+import Botao from "@/components/botao";
 import AuthInput from "@/components/authInput";
 import { registerUser } from "@/service/authService";
 import { getMensagemErroAuth } from "@/utils/errosFirebase";
@@ -130,7 +130,7 @@ export default function RegisterScreen() {
                             </Text>
                         )}
 
-                        <AuthButton title="Cadastrar" onPress={handleRegister} loading={loading} />
+                        <Botao title="Cadastrar" onPress={handleRegister} loading={loading} />
                     </View>
 
                     <View style={styles.footer}>
