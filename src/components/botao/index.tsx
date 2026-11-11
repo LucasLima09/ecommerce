@@ -1,13 +1,13 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from "react-native";
 
-type AuthButtonProps = {
+type BotaoProps = {
     title: string;
     onPress: () => void;
     loading?: boolean;
     disabled?: boolean;
 };
 
-export default function AuthButton({ title, onPress, loading, disabled }: AuthButtonProps) {
+export default function Botao({ title, onPress, loading, disabled }: BotaoProps) {
     const inactive = disabled || loading;
 
     return (

@@ -1,4 +1,4 @@
-import AuthButton from "@/components/authButton";
+import Botao from "@/components/botao";
 import AuthInput from "@/components/authInput";
 import { loginUser } from "@/service/authService";
 import { getMensagemErroAuth } from "@/utils/errosFirebase";
@@ -102,7 +102,7 @@ export default function LoginScreen() {
                             </Text>
                         )}
 
-                        <AuthButton title="Entrar" onPress={handleLogin} loading={loading} />
+                        <Botao title="Entrar" onPress={handleLogin} loading={loading} />
                     </View>
 
                     <View style={styles.footer}>

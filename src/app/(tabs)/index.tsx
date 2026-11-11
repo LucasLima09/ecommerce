@@ -1,10 +1,12 @@
+import BotaoIcone from "@/components/botaoIcone";
+import { Carregando, Erro } from "@/components/estadoTela";
 import ProdutoCard from "@/components/produtoCard";
 import { logoutUser } from "@/service/authService";
 import { getProdutos } from "@/service/produtosService";
 import { Produto } from "@/types/produto";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { useCarrinho } from "@/context/CarrinhoContext";
+import { Alert, FlatList, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Home() {
@@ -14,6 +16,7 @@ export default function Home() {
     const [erro, setErro] = useState<string | null>(null);
     // incrementar dispara uma nova busca (botão "Tentar novamente")
     const [tentativa, setTentativa] = useState(0);
+    const { adicionar } = useCarrinho();
 
     useEffect(() => {
         let ativo = true; // evita setState se a tela sair antes da resposta chegar
@@ -34,6 +37,15 @@ export default function Home() {
         };
     }, [tentativa]);
 
+    async function adicionarAoCarrinho(produto: Produto) {
+        try {
+            await adicionar(produto.id);
+            Alert.alert("Carrinho", `${produto.nome} foi adicionado ao carrinho.`);
+        } catch (e) {
+            Alert.alert("Não foi possível adicionar", (e as Error).message);
+        }
+    }
+
     function tentarNovamente() {
         setErro(null);
         setLoading(true);
@@ -44,37 +56,21 @@ export default function Home() {
         <SafeAreaView style={styles.container} edges={["top"]}>
             <View style={styles.header}>
                 <Text style={styles.title}>ATTURA</Text>
-                <Pressable
-                    onPress={logoutUser}
-                    hitSlop={12}
-                    accessibilityRole="button"
-                    accessibilityLabel="Sair da conta"
-                >
-                    <Ionicons name="log-out-outline" size={26} color="#1C1C1E" />
-                </Pressable>
+                <BotaoIcone icone="log-out-outline" tamanho={26} descricao="Sair da conta" onPress={logoutUser} />
             </View>
             <Text style={styles.subtitle}>Bem vindo!</Text>
             <Text>Tudo que você precisa aqui</Text>
             {loading ? (
-                <View style={styles.centro}>
-                    <ActivityIndicator size="large" color="#1C1C1E" />
-                </View>
+                <Carregando />
             ) : erro ? (
-                <View style={styles.centro}>
-                    <Text style={styles.erro}>{erro}</Text>
-                    <Pressable onPress={tentarNovamente} style={styles.botao} accessibilityRole="button">
-                        <Text style={styles.botaoTexto}>Tentar novamente</Text>
-                    </Pressable>
-                </View>
+                <Erro mensagem={erro} onTentarNovamente={tentarNovamente} />
             ) : (
             <FlatList
                 data={produtos}
                 renderItem={({ item }) => (
                     <ProdutoCard
                         produto={item}
-                        onAddToCart={(produto) => {
-                            console.log("Adicionar ao carrinho:", produto.id);
-                        }}
+                        onAddToCart={adicionarAoCarrinho}
                     />
                 )}
                 keyExtractor={(item) => item.id.toString()}
@@ -113,27 +109,5 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: "#636366",
         marginTop: 4,
-    },
-    centro: {
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 16,
-    },
-    erro: {
-        fontSize: 15,
-        color: "#636366",
-        textAlign: "center",
-    },
-    botao: {
-        backgroundColor: "#1C1C1E",
-        paddingHorizontal: 20,
-        paddingVertical: 12,
-        borderRadius: 980,
-    },
-    botaoTexto: {
-        color: "#FFFFFF",
-        fontSize: 15,
-        fontWeight: "600",
     },
 });

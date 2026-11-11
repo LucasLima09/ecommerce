@@ -1,4 +1,5 @@
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { CarrinhoProvider } from "@/context/CarrinhoContext";
 import { Stack } from "expo-router";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
@@ -6,7 +7,9 @@ export default function RootLayout() {
 
     return (
         <AuthProvider>
-            <RootNavigator />
+            <CarrinhoProvider>
+                <RootNavigator />
+            </CarrinhoProvider>
         </AuthProvider>
     );
 }
