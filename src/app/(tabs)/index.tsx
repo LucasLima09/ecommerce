@@ -4,7 +4,8 @@ import { getProdutos } from "@/service/produtosService";
 import { Produto } from "@/types/produto";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { useCarrinho } from "@/context/CarrinhoContext";
+import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Home() {
@@ -14,6 +15,7 @@ export default function Home() {
     const [erro, setErro] = useState<string | null>(null);
     // incrementar dispara uma nova busca (botão "Tentar novamente")
     const [tentativa, setTentativa] = useState(0);
+    const { adicionar } = useCarrinho();
 
     useEffect(() => {
         let ativo = true; // evita setState se a tela sair antes da resposta chegar
@@ -33,6 +35,15 @@ export default function Home() {
             ativo = false;
         };
     }, [tentativa]);
+
+    async function adicionarAoCarrinho(produto: Produto) {
+        try {
+            await adicionar(produto.id);
+            Alert.alert("Carrinho", `${produto.nome} foi adicionado ao carrinho.`);
+        } catch (e) {
+            Alert.alert("Não foi possível adicionar", (e as Error).message);
+        }
+    }
 
     function tentarNovamente() {
         setErro(null);
@@ -72,9 +83,7 @@ export default function Home() {
                 renderItem={({ item }) => (
                     <ProdutoCard
                         produto={item}
-                        onAddToCart={(produto) => {
-                            console.log("Adicionar ao carrinho:", produto.id);
-                        }}
+                        onAddToCart={adicionarAoCarrinho}
                     />
                 )}
                 keyExtractor={(item) => item.id.toString()}
