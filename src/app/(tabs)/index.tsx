@@ -1,4 +1,5 @@
 import BotaoIcone from "@/components/botaoIcone";
+import CampoBusca from "@/components/campoBusca";
 import { Carregando, Erro } from "@/components/estadoTela";
 import ProdutoCard from "@/components/produtoCard";
 import { logoutUser } from "@/service/authService";
@@ -18,25 +19,36 @@ export default function Home() {
     // incrementar dispara uma nova busca (botão "Tentar novamente")
     const [tentativa, setTentativa] = useState(0);
     const { adicionar } = useCarrinho();
+    const [textoBusca, setTextoBusca] = useState("");
+    const [busca, setBusca] = useState("");
+
+    // why: sem esse atraso, cada letra digitada faria uma chamada à API.
+    useEffect(() => {
+        const timer = setTimeout(() => setBusca(textoBusca.trim()), 400);
+        return () => clearTimeout(timer);
+    }, [textoBusca]);
 
     useEffect(() => {
         let ativo = true; // evita setState se a tela sair antes da resposta chegar
 
-        getProdutos()
-            .then((data) => {
+        async function carregar() {
+            setLoading(true);
+            setErro(null);
+            try {
+                const data = await getProdutos({ busca: busca || undefined });
                 if (ativo) setProdutos(data);
-            })
-            .catch(() => {
+            } catch {
                 if (ativo) setErro("Não foi possível carregar os produtos.");
-            })
-            .finally(() => {
+            } finally {
                 if (ativo) setLoading(false);
-            });
+            }
+        }
+        carregar();
 
         return () => {
             ativo = false;
         };
-    }, [tentativa]);
+    }, [busca, tentativa]);
 
     async function adicionarAoCarrinho(produto: Produto) {
         try {
@@ -47,11 +59,7 @@ export default function Home() {
         }
     }
 
-    function tentarNovamente() {
-        setErro(null);
-        setLoading(true);
-        setTentativa((t) => t + 1);
-    }
+    const tentarNovamente = () => setTentativa((t) => t + 1);
 
     return (
         <SafeAreaView style={styles.container} edges={["top"]}>
@@ -61,6 +69,9 @@ export default function Home() {
             </View>
             <Text style={styles.subtitle}>Bem vindo!</Text>
             <Text>Tudo que você precisa aqui</Text>
+            <View style={styles.busca}>
+                <CampoBusca valor={textoBusca} onChange={setTextoBusca} />
+            </View>
             {loading ? (
                 <Carregando />
             ) : erro ? (
@@ -80,6 +91,7 @@ export default function Home() {
                 keyExtractor={(item) => item.id.toString()}
                 contentContainerStyle={styles.list}
                 showsVerticalScrollIndicator={false}
+                ListEmptyComponent={<Text style={styles.vazio}>Nenhum produto encontrado.</Text>}
             />
             )}
         </SafeAreaView>
@@ -97,6 +109,15 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
+    },
+    busca: {
+        marginTop: 16,
+    },
+    vazio: {
+        marginTop: 32,
+        fontSize: 15,
+        color: "#8E8E93",
+        textAlign: "center",
     },
     list: {
         paddingTop: 16,
