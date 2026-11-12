@@ -1,10 +1,12 @@
 import BotaoIcone from "@/components/botaoIcone";
 import CampoBusca from "@/components/campoBusca";
+import FiltroCategorias from "@/components/filtroCategorias";
+import { getCategorias } from "@/service/categoriasService";
 import { Carregando, Erro } from "@/components/estadoTela";
 import ProdutoCard from "@/components/produtoCard";
 import { logoutUser } from "@/service/authService";
 import { getProdutos } from "@/service/produtosService";
-import { Produto } from "@/types/produto";
+import { Categoria, Produto } from "@/types/produto";
 import { useEffect, useState } from "react";
 import { useCarrinho } from "@/context/CarrinhoContext";
 import { router } from "expo-router";
@@ -21,6 +23,13 @@ export default function Home() {
     const { adicionar } = useCarrinho();
     const [textoBusca, setTextoBusca] = useState("");
     const [busca, setBusca] = useState("");
+    const [categorias, setCategorias] = useState<Categoria[]>([]);
+    const [categoria, setCategoria] = useState<Categoria["id"] | null>(null);
+
+    // why: se as categorias falharem, a Home continua funcionando só sem os filtros.
+    useEffect(() => {
+        getCategorias().then(setCategorias).catch(() => setCategorias([]));
+    }, []);
 
     // why: sem esse atraso, cada letra digitada faria uma chamada à API.
     useEffect(() => {
@@ -35,7 +44,7 @@ export default function Home() {
             setLoading(true);
             setErro(null);
             try {
-                const data = await getProdutos({ busca: busca || undefined });
+                const data = await getProdutos({ busca: busca || undefined, categoria: categoria ?? undefined });
                 if (ativo) setProdutos(data);
             } catch {
                 if (ativo) setErro("Não foi possível carregar os produtos.");
@@ -48,7 +57,7 @@ export default function Home() {
         return () => {
             ativo = false;
         };
-    }, [busca, tentativa]);
+    }, [busca, categoria, tentativa]);
 
     async function adicionarAoCarrinho(produto: Produto) {
         try {
@@ -71,6 +80,9 @@ export default function Home() {
             <Text>Tudo que você precisa aqui</Text>
             <View style={styles.busca}>
                 <CampoBusca valor={textoBusca} onChange={setTextoBusca} />
+                {categorias.length > 0 && (
+                    <FiltroCategorias categorias={categorias} selecionada={categoria} onSelecionar={setCategoria} />
+                )}
             </View>
             {loading ? (
                 <Carregando />
@@ -112,6 +124,7 @@ const styles = StyleSheet.create({
     },
     busca: {
         marginTop: 16,
+        gap: 12,
     },
     vazio: {
         marginTop: 32,
