@@ -8,11 +8,11 @@ import { FormaPagamento, FormaPagamentoId } from "@/types/compra";
 import { getMensagemErroApi } from "@/utils/errosApi";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { Alert, FlatList, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function PagamentoScreen() {
-    const { carrinho } = useCarrinho();
+    const { carrinho, atualizando, finalizar } = useCarrinho();
     const [formas, setFormas] = useState<FormaPagamento[]>([]);
     const [selecionada, setSelecionada] = useState<FormaPagamentoId | null>(null);
     const [loading, setLoading] = useState(true);
@@ -43,6 +43,18 @@ export default function PagamentoScreen() {
 
     const tentarNovamente = () => setTentativa((t) => t + 1);
 
+    async function confirmarPedido() {
+        if (!selecionada) return;
+        try {
+            const compra = await finalizar(selecionada);
+            // why: replace tira o pagamento da pilha, então voltar da confirmação não reabre a compra já feita.
+            router.replace({ pathname: "/pedido/[id]", params: { id: compra.id.toString() } });
+        } catch (e) {
+            // why: a API explica o motivo da recusa (ex.: carrinho vazio, estoque insuficiente).
+            Alert.alert("Pagamento", (e as Error).message);
+        }
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
@@ -65,6 +77,7 @@ export default function PagamentoScreen() {
                             forma={item}
                             selecionada={item.id === selecionada}
                             onSelecionar={setSelecionada}
+                            desabilitado={atualizando}
                         />
                     )}
                 />
@@ -75,7 +88,8 @@ export default function PagamentoScreen() {
                 tituloBotao="Confirmar pedido"
                 // invariant: não é possível finalizar sem uma forma de pagamento escolhida.
                 desabilitado={!selecionada}
-                onConfirmar={() => {}}
+                loading={atualizando}
+                onConfirmar={confirmarPedido}
             />
         </SafeAreaView>
     );
