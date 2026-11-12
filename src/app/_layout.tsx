@@ -33,6 +33,8 @@ function RootNavigator(){
             <Stack.Protected guard = {!!user} >
                 <Stack.Screen name="(tabs)" />
                 <Stack.Screen name="pagamento" />
+                {/* why: depois de comprar, o gesto de voltar levaria à tela de pagamento de um carrinho já vazio */}
+                <Stack.Screen name="pedido/[id]" options={{ gestureEnabled: false }} />
             </Stack.Protected>
 
             <Stack.Protected guard = {!user} >
