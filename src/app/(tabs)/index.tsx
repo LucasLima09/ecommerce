@@ -6,6 +6,7 @@ import { getProdutos } from "@/service/produtosService";
 import { Produto } from "@/types/produto";
 import { useEffect, useState } from "react";
 import { useCarrinho } from "@/context/CarrinhoContext";
+import { router } from "expo-router";
 import { Alert, FlatList, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -71,6 +72,9 @@ export default function Home() {
                     <ProdutoCard
                         produto={item}
                         onAddToCart={adicionarAoCarrinho}
+                        onPress={(produto) =>
+                            router.push({ pathname: "/produto/[id]", params: { id: produto.id.toString() } })
+                        }
                     />
                 )}
                 keyExtractor={(item) => item.id.toString()}

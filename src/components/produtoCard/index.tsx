@@ -7,13 +7,19 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 type ProdutoCardProps = {
     produto: Produto;
     onAddToCart?: (produto: Produto) => void;
+    onPress?: (produto: Produto) => void;
 };
 
-export default function ProdutoCard({ produto, onAddToCart }: ProdutoCardProps) {
+export default function ProdutoCard({ produto, onAddToCart, onPress }: ProdutoCardProps) {
     const semEstoque = produto.estoque <= 0;
 
     return (
-        <View style={styles.card}>
+        <Pressable
+            style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+            onPress={() => onPress?.(produto)}
+            accessibilityRole="button"
+            accessibilityLabel={`Ver detalhes de ${produto.nome}`}
+        >
             <Image
                 source={{ uri: produto.imagem }}
                 style={styles.image}
@@ -59,7 +65,7 @@ export default function ProdutoCard({ produto, onAddToCart }: ProdutoCardProps) 
                     </Pressable>
                 </View>
             </View>
-        </View>
+        </Pressable>
     );
 }
 
@@ -70,6 +76,9 @@ const styles = StyleSheet.create({
         overflow: "hidden",
         borderWidth: StyleSheet.hairlineWidth,
         borderColor: "#E5E5EA",
+    },
+    cardPressed: {
+        opacity: 0.85,
     },
     image: {
         width: "100%",
