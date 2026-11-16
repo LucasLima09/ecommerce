@@ -7,57 +7,66 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 type ProdutoCardProps = {
     produto: Produto;
     onAddToCart?: (produto: Produto) => void;
+    onPress?: (produto: Produto) => void;
 };
 
-export default function ProdutoCard({ produto, onAddToCart }: ProdutoCardProps) {
+export default function ProdutoCard({ produto, onAddToCart, onPress }: ProdutoCardProps) {
     const semEstoque = produto.estoque <= 0;
 
     return (
         <View style={styles.card}>
-            <Image
-                source={{ uri: produto.imagem }}
-                style={styles.image}
-                contentFit="cover"
-                transition={200}
-            />
+            {/* hazard: no navegador o Pressable vira <button>; envolver o botão "Adicionar" geraria <button> dentro de <button>. */}
+            <Pressable
+                style={({ pressed }) => pressed && styles.cardPressed}
+                onPress={() => onPress?.(produto)}
+                accessibilityRole="button"
+                accessibilityLabel={`Ver detalhes de ${produto.nome}`}
+            >
+                <Image
+                    source={{ uri: produto.imagem }}
+                    style={styles.image}
+                    contentFit="cover"
+                    transition={200}
+                />
 
-            <View style={styles.content}>
-                <Text style={styles.category}>{produto.categoria}</Text>
-                <Text style={styles.name} numberOfLines={2}>
-                    {produto.nome}
-                </Text>
-                <Text style={styles.description} numberOfLines={2}>
-                    {produto.descricao}
-                </Text>
-
-                <View style={styles.footer}>
-                    <Text style={styles.price}>{formatarPreco(produto.preco)}</Text>
-
-                    <Pressable
-                        style={({ pressed }) => [
-                            styles.button,
-                            semEstoque && styles.buttonDisabled,
-                            pressed && !semEstoque && styles.buttonPressed,
-                        ]}
-                        onPress={() => onAddToCart?.(produto)}
-                        disabled={semEstoque}
-                        accessibilityRole="button"
-                        accessibilityLabel={
-                            semEstoque
-                                ? "Produto indisponível"
-                                : `Adicionar ${produto.nome} ao carrinho`
-                        }
-                    >
-                        {semEstoque ? (
-                            <Text style={styles.buttonText}>Indisponível</Text>
-                        ) : (
-                            <View style={styles.buttonContent}>
-                                <Ionicons name="cart-outline" size={16} color="#FFFFFF" />
-                                <Text style={styles.buttonText}>Adicionar</Text>
-                            </View>
-                        )}
-                    </Pressable>
+                <View style={styles.content}>
+                    <Text style={styles.category}>{produto.categoria}</Text>
+                    <Text style={styles.name} numberOfLines={2}>
+                        {produto.nome}
+                    </Text>
+                    <Text style={styles.description} numberOfLines={2}>
+                        {produto.descricao}
+                    </Text>
                 </View>
+            </Pressable>
+
+            <View style={styles.footer}>
+                <Text style={styles.price}>{formatarPreco(produto.preco)}</Text>
+
+                <Pressable
+                    style={({ pressed }) => [
+                        styles.button,
+                        semEstoque && styles.buttonDisabled,
+                        pressed && !semEstoque && styles.buttonPressed,
+                    ]}
+                    onPress={() => onAddToCart?.(produto)}
+                    disabled={semEstoque}
+                    accessibilityRole="button"
+                    accessibilityLabel={
+                        semEstoque
+                            ? "Produto indisponível"
+                            : `Adicionar ${produto.nome} ao carrinho`
+                    }
+                >
+                    {semEstoque ? (
+                        <Text style={styles.buttonText}>Indisponível</Text>
+                    ) : (
+                        <View style={styles.buttonContent}>
+                            <Ionicons name="cart-outline" size={16} color="#FFFFFF" />
+                            <Text style={styles.buttonText}>Adicionar</Text>
+                        </View>
+                    )}
+                </Pressable>
             </View>
         </View>
     );
@@ -71,13 +80,17 @@ const styles = StyleSheet.create({
         borderWidth: StyleSheet.hairlineWidth,
         borderColor: "#E5E5EA",
     },
+    cardPressed: {
+        opacity: 0.85,
+    },
     image: {
         width: "100%",
         height: 180,
         backgroundColor: "#F2F2F7",
     },
     content: {
-        padding: 16,
+        paddingHorizontal: 16,
+        paddingTop: 16,
         gap: 6,
     },
     category: {
@@ -98,7 +111,9 @@ const styles = StyleSheet.create({
         color: "#636366",
     },
     footer: {
-        marginTop: 10,
+        paddingHorizontal: 16,
+        paddingTop: 16,
+        paddingBottom: 16,
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
