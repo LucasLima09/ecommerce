@@ -3,6 +3,7 @@ import CarrinhoVazio from "@/components/carrinhoVazio";
 import ItemCarrinhoCard from "@/components/itemCarrinhoCard";
 import ResumoCarrinho from "@/components/resumoCarrinho";
 import { useCarrinho } from "@/context/CarrinhoContext";
+import { router } from "expo-router";
 import { Alert, FlatList, StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -53,7 +54,7 @@ export default function CarrinhoScreen() {
                 total={carrinho.total}
                 tituloBotao="Finalizar compra"
                 desabilitado={vazio}
-                onConfirmar={() => {}}
+                onConfirmar={() => router.push("/pagamento")}
             />
         </SafeAreaView>
     );

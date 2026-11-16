@@ -5,7 +5,9 @@ import {
     getCarrinho,
     removerItemCarrinho,
 } from "@/service/carrinhoService";
+import { finalizarCompra } from "@/service/comprasService";
 import { Carrinho } from "@/types/carrinho";
+import { Compra, FormaPagamentoId } from "@/types/compra";
 import { Produto } from "@/types/produto";
 import { getMensagemErroApi } from "@/utils/errosApi";
 import { createContext, PropsWithChildren, use, useEffect, useState } from "react";
@@ -22,6 +24,7 @@ type CarrinhoContextType = {
     adicionar: (produtoId: Produto["id"], quantidade?: number) => Promise<void>;
     alterarQuantidade: (produtoId: Produto["id"], quantidade: number) => Promise<void>;
     remover: (produtoId: Produto["id"]) => Promise<void>;
+    finalizar: (formaPagamento: FormaPagamentoId) => Promise<Compra>;
 };
 
 const CarrinhoContext = createContext<CarrinhoContextType | null>(null);
@@ -107,6 +110,21 @@ export function CarrinhoProvider({ children }: PropsWithChildren) {
         );
     }
 
+    async function finalizar(formaPagamento: FormaPagamentoId) {
+        if (!usuarioId) throw new Error("Faça login para finalizar a compra.");
+        setAtualizando(true);
+        try {
+            const compra = await finalizarCompra({ usuarioId, formaPagamento });
+            // why: a API esvazia o carrinho ao registrar a compra; sem isso o badge e a tela do carrinho mostrariam os itens antigos.
+            setEstado({ usuarioId, carrinho: { usuarioId, itens: [], quantidadeTotal: 0, total: 0 }, erro: null });
+            return compra;
+        } catch (e) {
+            throw new Error(getMensagemErroApi(e, "Não foi possível finalizar a compra."));
+        } finally {
+            setAtualizando(false);
+        }
+    }
+
     return (
         <CarrinhoContext
             value={{
@@ -119,6 +137,7 @@ export function CarrinhoProvider({ children }: PropsWithChildren) {
                 adicionar,
                 alterarQuantidade,
                 remover,
+                finalizar,
             }}
         >
             {children}
