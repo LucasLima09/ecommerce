@@ -4,17 +4,12 @@ import { Carregando, Erro } from "@/components/estadoTela";
 import { getCompraById } from "@/service/comprasService";
 import { Compra } from "@/types/compra";
 import { getMensagemErroApi } from "@/utils/errosApi";
+import { NOMES_PAGAMENTO } from "@/utils/formasPagamento";
 import { formatarPreco } from "@/utils/formatarPreco";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-const NOMES_PAGAMENTO: Record<Compra["formaPagamento"], string> = {
-    pix: "Pix",
-    cartao: "Cartão de crédito",
-    boleto: "Boleto",
-};
 
 export default function PedidoScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
