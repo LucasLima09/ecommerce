@@ -1,4 +1,5 @@
 import BotaoIcone from "@/components/botaoIcone";
+import { cores, espaco, fonte, raio } from "@/theme";
 import { Categoria } from "@/types/produto";
 import { useRef, useState } from "react";
 import {
@@ -57,21 +58,14 @@ export default function FiltroCategorias({ categorias, selecionada, onSelecionar
                 onLayout={(e) => setLarguraVisivel(e.nativeEvent.layout.width)}
                 onContentSizeChange={(largura) => setLarguraConteudo(largura)}
             >
-                {opcoes.map((opcao) => {
-                    const ativa = opcao.id === selecionada;
-                    return (
-                        <Pressable
-                            key={opcao.id ?? "todas"}
-                            onPress={() => onSelecionar(opcao.id)}
-                            style={({ pressed }) => [styles.chip, ativa && styles.chipAtivo, pressed && styles.pressionado]}
-                            accessibilityRole="button"
-                            accessibilityState={{ selected: ativa }}
-                            accessibilityLabel={`Categoria ${opcao.nome}`}
-                        >
-                            <Text style={[styles.texto, ativa && styles.textoAtivo]}>{opcao.nome}</Text>
-                        </Pressable>
-                    );
-                })}
+                {opcoes.map((opcao) => (
+                    <Chip
+                        key={opcao.id ?? "todas"}
+                        nome={opcao.nome}
+                        ativa={opcao.id === selecionada}
+                        onPress={() => onSelecionar(opcao.id)}
+                    />
+                ))}
             </ScrollView>
 
             {podeAvancar && (
@@ -81,29 +75,58 @@ export default function FiltroCategorias({ categorias, selecionada, onSelecionar
     );
 }
 
+function Chip({ nome, ativa, onPress }: { nome: string; ativa: boolean; onPress: () => void }) {
+    const [hover, setHover] = useState(false);
+
+    return (
+        <Pressable
+            onPress={onPress}
+            onHoverIn={() => setHover(true)}
+            onHoverOut={() => setHover(false)}
+            style={({ pressed }) => [
+                styles.chip,
+                hover && !ativa && styles.chipHover,
+                ativa && styles.chipAtivo,
+                pressed && styles.pressionado,
+            ]}
+            accessibilityRole="button"
+            accessibilityState={{ selected: ativa }}
+            accessibilityLabel={`Categoria ${nome}`}
+        >
+            <Text style={[styles.texto, ativa && styles.textoAtivo]}>{nome}</Text>
+        </Pressable>
+    );
+}
+
 const styles = StyleSheet.create({
     container: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 6,
+        gap: espaco.sm,
     },
     rolagem: {
         flex: 1,
     },
     lista: {
-        gap: 8,
+        gap: espaco.sm,
+        // why: sem esse respiro o último chip fica encostado na seta e parece cortado ao fim da rolagem.
+        paddingRight: espaco.lg,
     },
     chip: {
-        paddingHorizontal: 14,
-        paddingVertical: 8,
-        borderRadius: 980,
-        backgroundColor: "#FFFFFF",
-        borderWidth: StyleSheet.hairlineWidth,
-        borderColor: "#E5E5EA",
+        minHeight: 36,
+        justifyContent: "center",
+        paddingHorizontal: espaco.lg,
+        borderRadius: raio.pill,
+        backgroundColor: cores.superficie,
+        borderWidth: 1,
+        borderColor: cores.borda,
+    },
+    chipHover: {
+        borderColor: cores.bordaHover,
     },
     chipAtivo: {
-        backgroundColor: "#1C1C1E",
-        borderColor: "#1C1C1E",
+        backgroundColor: cores.primaria,
+        borderColor: cores.primaria,
     },
     pressionado: {
         opacity: 0.7,
@@ -111,11 +134,11 @@ const styles = StyleSheet.create({
     texto: {
         // why: sem isso, arrastar com o mouse no navegador seleciona o texto dos chips.
         userSelect: "none",
-        fontSize: 14,
-        fontWeight: "500",
-        color: "#1C1C1E",
+        fontSize: fonte.pequeno,
+        fontWeight: "600",
+        color: cores.texto,
     },
     textoAtivo: {
-        color: "#FFFFFF",
+        color: cores.primariaTexto,
     },
 });
