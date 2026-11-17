@@ -1,4 +1,5 @@
 import BotaoIcone from "@/components/botaoIcone";
+import { cores, espaco, fonte, raio } from "@/theme";
 import { ItemCarrinho } from "@/types/carrinho";
 import { formatarPreco } from "@/utils/formatarPreco";
 import { Image } from "expo-image";
@@ -21,40 +22,43 @@ export default function ItemCarrinhoCard({
 }: ItemCarrinhoCardProps) {
     return (
         <View style={styles.card}>
-            <Image source={{ uri: item.imagem }} style={styles.imagem} contentFit="cover" />
+            <Image source={{ uri: item.imagem }} style={styles.imagem} contentFit="cover" transition={200} />
 
             <View style={styles.info}>
                 <View style={styles.topo}>
-                    <Text style={styles.nome} numberOfLines={2}>
-                        {item.nome}
-                    </Text>
+                    <View style={styles.textos}>
+                        <Text style={styles.nome} numberOfLines={2}>
+                            {item.nome}
+                        </Text>
+                        <Text style={styles.unitario}>{formatarPreco(item.preco)} cada</Text>
+                    </View>
                     <BotaoIcone
                         icone="trash-outline"
-                        cor="#FF3B30"
+                        cor={cores.erro}
                         descricao={`Remover ${item.nome}`}
                         onPress={onRemover}
                         disabled={desabilitado}
                     />
                 </View>
 
-                <Text style={styles.unitario}>{formatarPreco(item.preco)} cada</Text>
-
                 <View style={styles.rodape}>
                     <View style={styles.quantidade}>
                         <BotaoIcone
                             icone="remove"
-                            tamanho={18}
-                            comFundo
-                            descricao="Diminuir quantidade"
+                            tamanho={16}
+                            folga={14}
+                            descricao={`Diminuir quantidade de ${item.nome}`}
                             onPress={onDiminuir}
                             disabled={desabilitado}
                         />
-                        <Text style={styles.qtdTexto}>{item.quantidade}</Text>
+                        <Text style={styles.qtdTexto} accessibilityLabel={`Quantidade: ${item.quantidade}`}>
+                            {item.quantidade}
+                        </Text>
                         <BotaoIcone
                             icone="add"
-                            tamanho={18}
-                            comFundo
-                            descricao="Aumentar quantidade"
+                            tamanho={16}
+                            folga={14}
+                            descricao={`Aumentar quantidade de ${item.nome}`}
                             onPress={onAumentar}
                             disabled={desabilitado}
                         />
@@ -70,58 +74,71 @@ export default function ItemCarrinhoCard({
 const styles = StyleSheet.create({
     card: {
         flexDirection: "row",
-        backgroundColor: "#FFFFFF",
-        borderRadius: 16,
-        padding: 12,
-        gap: 12,
-        borderWidth: StyleSheet.hairlineWidth,
-        borderColor: "#E5E5EA",
+        backgroundColor: cores.superficie,
+        borderRadius: raio.lg,
+        padding: espaco.md,
+        gap: espaco.md,
+        borderWidth: 1,
+        borderColor: cores.borda,
     },
     imagem: {
-        width: 80,
-        height: 80,
-        borderRadius: 12,
-        backgroundColor: "#F2F2F7",
+        width: 88,
+        height: 88,
+        borderRadius: raio.md,
+        backgroundColor: cores.neutroAtivo,
     },
     info: {
         flex: 1,
-        gap: 4,
+        justifyContent: "space-between",
+        gap: espaco.sm,
     },
     topo: {
         flexDirection: "row",
-        justifyContent: "space-between",
-        gap: 8,
+        alignItems: "flex-start",
+        gap: espaco.sm,
+    },
+    textos: {
+        flex: 1,
+        gap: espaco.xs,
     },
     nome: {
-        flex: 1,
-        fontSize: 15,
+        fontSize: fonte.produto,
         fontWeight: "600",
-        color: "#1C1C1E",
+        color: cores.texto,
     },
     unitario: {
-        fontSize: 13,
-        color: "#8E8E93",
+        fontSize: fonte.legenda,
+        color: cores.textoSecundario,
     },
     rodape: {
-        marginTop: 6,
         flexDirection: "row",
+        flexWrap: "wrap",
         alignItems: "center",
         justifyContent: "space-between",
+        gap: espaco.sm,
     },
     quantidade: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 12,
+        gap: espaco.md,
+        height: 36,
+        paddingHorizontal: espaco.md,
+        borderRadius: raio.pill,
+        borderWidth: 1,
+        borderColor: cores.borda,
+        backgroundColor: cores.fundo,
     },
     qtdTexto: {
-        fontSize: 15,
-        fontWeight: "600",
+        fontSize: fonte.produto,
+        fontWeight: "700",
         minWidth: 20,
         textAlign: "center",
+        color: cores.texto,
     },
     subtotal: {
-        fontSize: 16,
+        fontSize: fonte.preco,
         fontWeight: "700",
-        color: "#1C1C1E",
+        letterSpacing: -0.3,
+        color: cores.texto,
     },
 });
