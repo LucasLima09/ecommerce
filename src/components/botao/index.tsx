@@ -1,5 +1,5 @@
+import { useHover } from "@/hooks/useHover";
 import { cores, fonte, raio, sombra } from "@/theme";
-import { useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text } from "react-native";
 
 type BotaoProps = {
@@ -11,7 +11,7 @@ type BotaoProps = {
 
 export default function Botao({ title, onPress, loading, disabled }: BotaoProps) {
     const inactive = disabled || loading;
-    const [hover, setHover] = useState(false);
+    const { hover, hoverProps } = useHover();
 
     return (
         <Pressable
@@ -21,8 +21,7 @@ export default function Botao({ title, onPress, loading, disabled }: BotaoProps)
                 hover && !inactive && styles.buttonHover,
                 pressed && !inactive && styles.buttonPressed,
             ]}
-            onHoverIn={() => setHover(true)}
-            onHoverOut={() => setHover(false)}
+            {...hoverProps}
             onPress={onPress}
             disabled={inactive}
             accessibilityRole="button"

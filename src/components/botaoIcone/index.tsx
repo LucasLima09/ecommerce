@@ -1,6 +1,7 @@
+import { useHover } from "@/hooks/useHover";
 import { cores, raio } from "@/theme";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { ComponentProps, useState } from "react";
+import { ComponentProps } from "react";
 import { Pressable, StyleSheet } from "react-native";
 
 type BotaoIconeProps = {
@@ -25,7 +26,7 @@ export default function BotaoIcone({
     inverso = false,
     disabled = false,
 }: BotaoIconeProps) {
-    const [hover, setHover] = useState(false);
+    const { hover, hoverProps } = useHover();
     const corIcone = cor ?? (inverso ? cores.primariaTexto : cores.texto);
 
     return (
@@ -34,8 +35,7 @@ export default function BotaoIcone({
             disabled={disabled}
             // why: com o hitSlop a área de toque passa dos 44 mesmo quando o ícone é pequeno.
             hitSlop={10}
-            onHoverIn={() => setHover(true)}
-            onHoverOut={() => setHover(false)}
+            {...hoverProps}
             style={({ pressed }) => [
                 comFundo && styles.fundo,
                 comFundo && inverso && styles.fundoInverso,

@@ -1,3 +1,4 @@
+import { useHover } from "@/hooks/useHover";
 import BotaoIcone from "@/components/botaoIcone";
 import { cores, espaco, fonte, raio } from "@/theme";
 import { Categoria } from "@/types/produto";
@@ -76,13 +77,12 @@ export default function FiltroCategorias({ categorias, selecionada, onSelecionar
 }
 
 function Chip({ nome, ativa, onPress }: { nome: string; ativa: boolean; onPress: () => void }) {
-    const [hover, setHover] = useState(false);
+    const { hover, hoverProps } = useHover();
 
     return (
         <Pressable
             onPress={onPress}
-            onHoverIn={() => setHover(true)}
-            onHoverOut={() => setHover(false)}
+            {...hoverProps}
             style={({ pressed }) => [
                 styles.chip,
                 hover && !ativa && styles.chipHover,

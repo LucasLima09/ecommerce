@@ -31,22 +31,27 @@ export const espaco = {
     lg: 16,
     xl: 24,
     xxl: 32,
+    // why: margem lateral das telas; 20 fica entre lg e xl para a vitrine em 2 colunas não apertar no celular.
+    tela: 20,
 } as const;
 
 export const raio = {
     sm: 8,
     md: 12,
     lg: 16,
+    xl: 24,
     pill: 999,
 } as const;
 
 export const fonte = {
+    mini: 11,
     legenda: 12,
     pequeno: 14,
+    produto: 15,
     corpo: 16,
-    produto: 16,
+    preco: 17,
     subtitulo: 18,
-    secao: 20,
+    secao: 22,
     titulo: 26,
 } as const;
 

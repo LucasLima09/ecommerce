@@ -193,10 +193,10 @@ const styles = StyleSheet.create({
     },
     hero: {
         backgroundColor: cores.primaria,
-        paddingHorizontal: espaco.lg + espaco.xs,
+        paddingHorizontal: espaco.tela,
         paddingBottom: espaco.xl,
-        borderBottomLeftRadius: raio.lg + espaco.sm,
-        borderBottomRightRadius: raio.lg + espaco.sm,
+        borderBottomLeftRadius: raio.xl,
+        borderBottomRightRadius: raio.xl,
         overflow: "hidden",
     },
     simbolo: {
@@ -230,14 +230,14 @@ const styles = StyleSheet.create({
     },
     filtros: {
         paddingTop: espaco.lg,
-        paddingHorizontal: espaco.lg + espaco.xs,
+        paddingHorizontal: espaco.tela,
     },
     lista: {
         flex: 1,
     },
     listaConteudo: {
         flexGrow: 1,
-        paddingHorizontal: espaco.lg + espaco.xs,
+        paddingHorizontal: espaco.tela,
         paddingTop: espaco.lg,
         paddingBottom: espaco.xl,
         gap: espaco.md,

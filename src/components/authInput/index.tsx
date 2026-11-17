@@ -1,3 +1,4 @@
+import { useHover } from "@/hooks/useHover";
 import { cores, espaco, fonte, raio, TOQUE_MIN } from "@/theme";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useState } from "react";
@@ -11,7 +12,7 @@ type AuthInputProps = TextInputProps & {
 
 export default function AuthInput({ label, icon, error, secureTextEntry, ...rest }: AuthInputProps) {
     const [focused, setFocused] = useState(false);
-    const [hover, setHover] = useState(false);
+    const { hover, pointerProps } = useHover();
     const [hidden, setHidden] = useState(true);
     const isPassword = !!secureTextEntry;
     const corIcone = error ? cores.erro : focused ? cores.texto : cores.textoSuave;
@@ -22,8 +23,7 @@ export default function AuthInput({ label, icon, error, secureTextEntry, ...rest
 
             <View
                 style={[styles.field, hover && styles.fieldHover, focused && styles.fieldFocused, !!error && styles.fieldError]}
-                onPointerEnter={() => setHover(true)}
-                onPointerLeave={() => setHover(false)}
+                {...pointerProps}
             >
                 <Ionicons name={icon} size={20} color={corIcone} />
 

@@ -1,4 +1,5 @@
-import { cores, espaco, fonte, raio, sombra, TOQUE_MIN } from "@/theme";
+import { useHover } from "@/hooks/useHover";
+import { cores, espaco, fonte, raio, sombra } from "@/theme";
 import { Produto } from "@/types/produto";
 import { formatarPreco } from "@/utils/formatarPreco";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -22,8 +23,8 @@ const DURACAO_CONFIRMACAO = 1600;
 
 export default function ProdutoCard({ produto, nomeCategoria, onAddToCart, onPress }: ProdutoCardProps) {
     const semEstoque = produto.estoque <= 0;
-    const [hoverCard, setHoverCard] = useState(false);
-    const [hoverBotao, setHoverBotao] = useState(false);
+    const card = useHover();
+    const botao = useHover();
     const [estado, setEstado] = useState<EstadoBotao>("parado");
 
     useEffect(() => {
@@ -43,9 +44,8 @@ export default function ProdutoCard({ produto, nomeCategoria, onAddToCart, onPre
 
     return (
         <View
-            style={[styles.card, hoverCard && styles.cardHover]}
-            onPointerEnter={() => setHoverCard(true)}
-            onPointerLeave={() => setHoverCard(false)}
+            style={[styles.card, card.hover && styles.cardHover]}
+            {...card.pointerProps}
         >
             {/* hazard: no navegador o Pressable vira <button>; envolver o botão de adicionar geraria <button> dentro de <button>. */}
             <Pressable
@@ -57,7 +57,7 @@ export default function ProdutoCard({ produto, nomeCategoria, onAddToCart, onPre
                 <View style={styles.imagemBox}>
                     <Image
                         source={{ uri: produto.imagem }}
-                        style={[styles.image, hoverCard && styles.imageHover]}
+                        style={[styles.image, card.hover && styles.imageHover]}
                         contentFit="cover"
                         transition={200}
                     />
@@ -90,7 +90,7 @@ export default function ProdutoCard({ produto, nomeCategoria, onAddToCart, onPre
                 <Pressable
                     style={({ pressed }) => [
                         styles.button,
-                        hoverBotao && !bloqueado && styles.buttonHover,
+                        botao.hover && !bloqueado && styles.buttonHover,
                         estado === "adicionado" && styles.buttonSucesso,
                         semEstoque && styles.buttonDisabled,
                         pressed && !bloqueado && styles.buttonPressed,
@@ -98,8 +98,7 @@ export default function ProdutoCard({ produto, nomeCategoria, onAddToCart, onPre
                     onPress={adicionar}
                     // why: o círculo tem 40; o hitSlop leva a área de toque acima dos 44 recomendados.
                     hitSlop={4}
-                    onHoverIn={() => setHoverBotao(true)}
-                    onHoverOut={() => setHoverBotao(false)}
+                    {...botao.hoverProps}
                     disabled={bloqueado}
                     accessibilityRole="button"
                     accessibilityState={{ disabled: bloqueado, busy: estado === "adicionando" }}
@@ -173,7 +172,7 @@ const styles = StyleSheet.create({
     },
     seloCategoriaTexto: {
         color: cores.texto,
-        fontSize: fonte.legenda - 1,
+        fontSize: fonte.mini,
         fontWeight: "600",
         textTransform: "capitalize",
     },
@@ -185,7 +184,7 @@ const styles = StyleSheet.create({
     },
     seloTexto: {
         color: cores.primariaTexto,
-        fontSize: fonte.legenda - 1,
+        fontSize: fonte.mini,
         fontWeight: "700",
     },
     content: {
@@ -193,7 +192,7 @@ const styles = StyleSheet.create({
         paddingTop: espaco.md,
     },
     name: {
-        fontSize: fonte.produto - 1,
+        fontSize: fonte.produto,
         lineHeight: 20,
         fontWeight: "600",
         color: cores.texto,
@@ -212,14 +211,14 @@ const styles = StyleSheet.create({
     },
     price: {
         flex: 1,
-        fontSize: fonte.corpo + 1,
+        fontSize: fonte.preco,
         fontWeight: "700",
         letterSpacing: -0.3,
         color: cores.texto,
     },
     button: {
-        width: TOQUE_MIN - 4,
-        height: TOQUE_MIN - 4,
+        width: 40,
+        height: 40,
         borderRadius: raio.pill,
         alignItems: "center",
         justifyContent: "center",

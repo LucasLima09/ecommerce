@@ -1,3 +1,4 @@
+import { useHover } from "@/hooks/useHover";
 import Botao from "@/components/botao";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { cores, espaco, fonte, raio, TOQUE_MIN } from "@/theme";
@@ -5,7 +6,7 @@ import { LogoBranco, SimboloA } from "@/components/marca";
 import { Href, Link } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -27,11 +28,16 @@ type TelaAuthProps = {
 // para o formulário inteiro caber sem precisar rolar.
 const ALTURA_COMPACTA = 760;
 
+const MEDIDAS = {
+    normal: { topoHero: 48, topoSimbolo: espaco.xxl, logo: 140, logoMargem: espaco.lg, cartaoPadding: espaco.xl, cartaoGap: espaco.xl, gap: espaco.lg },
+    compacta: { topoHero: espaco.xl, topoSimbolo: espaco.lg, logo: 120, logoMargem: espaco.md, cartaoPadding: espaco.tela, cartaoGap: espaco.lg, gap: espaco.md },
+};
+
 export default function TelaAuth({ titulo, subtitulo, erroGeral, children, acao, onAcao, loading, rodapeTexto, rodapeLink, rodapeHref }: TelaAuthProps) {
     const insets = useSafeAreaInsets();
     const { width, height } = useWindowDimensions();
-    const compacta = height < ALTURA_COMPACTA;
-    const [linkHover, setLinkHover] = useState(false);
+    const m = height < ALTURA_COMPACTA ? MEDIDAS.compacta : MEDIDAS.normal;
+    const link = useHover();
 
     // why: o slogan acompanha a largura da tela, sem ficar minúsculo no celular nem gigante na web.
     const tamanhoSlogan = Math.min(30, Math.max(22, width * 0.065));
@@ -46,23 +52,16 @@ export default function TelaAuth({ titulo, subtitulo, erroGeral, children, acao,
                     keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}
                 >
-                    <View
-                        style={[
-                            styles.hero,
-                            {
-                                paddingTop: insets.top + (compacta ? espaco.xl : espaco.xxl + espaco.lg),
-                            },
-                        ]}
-                    >
+                    <View style={[styles.hero, { paddingTop: insets.top + m.topoHero }]}>
                         <Animated.View
                             entering={FadeIn.duration(900).delay(150)}
-                            style={[styles.simbolo, { top: insets.top + (compacta ? espaco.lg : espaco.xxl) }]}
+                            style={[styles.simbolo, { top: insets.top + m.topoSimbolo }]}
                         >
                             <SimboloA style={styles.flex} />
                         </Animated.View>
 
                         <Animated.View entering={FadeInDown.duration(500)} style={styles.largura}>
-                            <LogoBranco style={[styles.logo, compacta && styles.logoCompacto]} />
+                            <LogoBranco style={{ width: m.logo, marginBottom: m.logoMargem }} />
                             <Text
                                 style={[styles.slogan, { fontSize: tamanhoSlogan, lineHeight: tamanhoSlogan * 1.15 }]}
                                 accessibilityRole="header"
@@ -75,20 +74,20 @@ export default function TelaAuth({ titulo, subtitulo, erroGeral, children, acao,
 
                     <Animated.View
                         entering={FadeInDown.duration(550).delay(120)}
-                        style={[styles.largura, styles.corpo, compacta && styles.corpoCompacto]}
+                        style={[styles.largura, styles.corpo, { gap: m.gap }]}
                     >
                         <LinearGradient
                             colors={[cores.superficie, cores.cartaoDegrade]}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 1 }}
-                            style={[styles.cartao, compacta && styles.cartaoCompacto]}
+                            style={[styles.cartao, { padding: m.cartaoPadding, gap: m.cartaoGap }]}
                         >
                             <View style={styles.header}>
                                 <Text style={styles.titulo}>{titulo}</Text>
                                 <Text style={styles.subtitulo}>{subtitulo}</Text>
                             </View>
 
-                            <View style={[styles.form, compacta && styles.formCompacto]}>
+                            <View style={{ gap: m.gap }}>
                                 {children}
                                 {!!erroGeral && (
                                     <Text style={styles.erroGeral} accessibilityRole="alert">
@@ -106,11 +105,10 @@ export default function TelaAuth({ titulo, subtitulo, erroGeral, children, acao,
                                     style={styles.link}
                                     accessibilityRole="link"
                                     hitSlop={4}
-                                    onHoverIn={() => setLinkHover(true)}
-                                    onHoverOut={() => setLinkHover(false)}
+                                    {...link.hoverProps}
                                 >
                                     {({ pressed }) => (
-                                        <View style={[styles.linkConteudo, (linkHover || pressed) && styles.linkAtivo]}>
+                                        <View style={[styles.linkConteudo, (link.hover || pressed) && styles.linkAtivo]}>
                                             <Text style={styles.linkTexto}>{rodapeLink}</Text>
                                             <Ionicons name="arrow-forward" size={16} color={cores.primariaTexto} />
                                         </View>
@@ -157,14 +155,6 @@ const styles = StyleSheet.create({
         maxWidth: 420,
         alignSelf: "center",
     },
-    logo: {
-        width: 140,
-        marginBottom: espaco.lg,
-    },
-    logoCompacto: {
-        width: 120,
-        marginBottom: espaco.md,
-    },
     slogan: {
         fontWeight: "800",
         color: cores.primariaTexto,
@@ -178,19 +168,9 @@ const styles = StyleSheet.create({
     },
     corpo: {
         paddingHorizontal: espaco.xl,
-        gap: espaco.lg,
-    },
-    corpoCompacto: {
-        gap: espaco.md,
     },
     cartao: {
         borderRadius: raio.lg,
-        padding: espaco.xl,
-        gap: espaco.xl,
-    },
-    cartaoCompacto: {
-        padding: espaco.lg + espaco.xs,
-        gap: espaco.lg,
     },
     header: {
         alignItems: "center",
@@ -200,7 +180,7 @@ const styles = StyleSheet.create({
         borderBottomColor: cores.borda,
     },
     titulo: {
-        fontSize: fonte.secao + 2,
+        fontSize: fonte.secao,
         fontWeight: "600",
         letterSpacing: -0.4,
         color: cores.texto,
@@ -210,12 +190,6 @@ const styles = StyleSheet.create({
         fontSize: fonte.pequeno,
         color: cores.textoSecundario,
         textAlign: "center",
-    },
-    form: {
-        gap: espaco.lg,
-    },
-    formCompacto: {
-        gap: espaco.md,
     },
     erroGeral: {
         fontSize: fonte.pequeno,
@@ -240,9 +214,9 @@ const styles = StyleSheet.create({
     linkConteudo: {
         flexDirection: "row",
         alignItems: "center",
-        gap: espaco.xs + 2,
+        gap: espaco.sm,
         paddingVertical: espaco.sm,
-        paddingHorizontal: espaco.md + 2,
+        paddingHorizontal: espaco.lg,
         borderRadius: raio.pill,
         borderWidth: 1,
         borderColor: cores.bordaInversa,
