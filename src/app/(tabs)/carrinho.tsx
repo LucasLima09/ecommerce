@@ -1,3 +1,5 @@
+import BarraInferior from "@/components/barraInferior";
+import Botao from "@/components/botao";
 import { Carregando, Erro, EstadoVazio } from "@/components/estadoTela";
 import FaixaMarca from "@/components/faixaMarca";
 import ItemCarrinhoCard from "@/components/itemCarrinhoCard";
@@ -32,13 +34,19 @@ export default function CarrinhoScreen() {
         }
         if (vazio) {
             return (
-                <EstadoVazio
-                    icone="bag-outline"
-                    titulo="Seu carrinho está vazio"
-                    mensagem="Explore a vitrine e adicione os produtos que quiser."
-                    acao="Explorar produtos"
-                    onAcao={() => router.navigate("/")}
-                />
+                <>
+                    <EstadoVazio
+                        icone="bag-outline"
+                        titulo="Seu carrinho está vazio"
+                        mensagem="Explore a vitrine e adicione os produtos que quiser."
+                        acao="Explorar produtos"
+                        onAcao={() => router.navigate("/")}
+                    />
+                    {/* invariant: o botão de finalizar continua visível, mas desativado, enquanto o carrinho está vazio. */}
+                    <BarraInferior>
+                        <Botao title="Finalizar compra" onPress={() => {}} disabled />
+                    </BarraInferior>
+                </>
             );
         }
         return (
