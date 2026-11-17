@@ -10,6 +10,7 @@ import { Categoria, Produto } from "@/types/produto";
 import { useEffect, useState } from "react";
 import { useCarrinho } from "@/context/CarrinhoContext";
 import { router } from "expo-router";
+import { Image } from "expo-image";
 import { Alert, FlatList, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -73,7 +74,12 @@ export default function Home() {
     return (
         <SafeAreaView style={styles.container} edges={["top"]}>
             <View style={styles.header}>
-                <Text style={styles.title}>ATTURA</Text>
+                <Image
+                    source={require("@/assets/images/logo-attura.png")}
+                    style={styles.logo}
+                    contentFit="contain"
+                    accessibilityLabel="ATTURA"
+                />
                 <BotaoIcone icone="log-out-outline" tamanho={26} descricao="Sair da conta" onPress={logoutUser} />
             </View>
             <Text style={styles.subtitle}>Bem vindo!</Text>
@@ -137,11 +143,9 @@ const styles = StyleSheet.create({
         paddingBottom: 24,
         gap: 14,
     },
-    title: {
-        fontSize: 28,
-        fontWeight: "700",
-        color: "#1C1C1E",
-        letterSpacing: 1,
+    logo: {
+        width: 150,
+        aspectRatio: 1849 / 349,
     },
     subtitle: {
         fontSize: 16,

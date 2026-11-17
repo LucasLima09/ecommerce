@@ -67,7 +67,7 @@ export default function RegisterScreen() {
                 >
                     <View style={styles.header}>
                         <Image
-                            source={require("@/assets/images/Logotipo minimalista ATTURA em preto.png")}
+                            source={require("@/assets/images/logo-attura.png")}
                             style={styles.logo}
                             contentFit="contain"
                             accessibilityLabel="ATTURA"
@@ -164,8 +164,8 @@ const styles = StyleSheet.create({
         gap: 6,
     },
     logo: {
-        width: 140,
-        aspectRatio: 1546 / 217,
+        width: 180,
+        aspectRatio: 1849 / 349,
         marginBottom: 16,
     },
     title: {
