@@ -10,13 +10,14 @@ import { getProdutos } from "@/service/produtosService";
 import { Categoria, Produto } from "@/types/produto";
 import { useEffect, useState } from "react";
 import { useCarrinho } from "@/context/CarrinhoContext";
-import { router, useIsFocused } from "expo-router";
-import { LogoBranco, SimboloA } from "@/components/marca";
-import { StatusBar } from "expo-status-bar";
-import { cores, espaco, fonte, raio } from "@/theme";
+import { estilosTela } from "@/theme/estilos";
+import { entradaItem } from "@/utils/animacoes";
+import { router } from "expo-router";
+import FaixaMarca from "@/components/faixaMarca";
+import { LogoBranco } from "@/components/marca";
+import { cores, espaco, fonte, larguraConteudo } from "@/theme";
 import { Alert, FlatList, StyleSheet, Text, useWindowDimensions, View } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Animated from "react-native-reanimated";
 
 // why: no celular a vitrine usa 2 colunas; tablet e web larga ganham mais colunas sem esticar as fotos.
 function colunasPara(largura: number) {
@@ -88,8 +89,6 @@ export default function Home() {
         setCategoria(null);
     };
 
-    const insets = useSafeAreaInsets();
-    const focada = useIsFocused();
     const { width } = useWindowDimensions();
     const colunas = colunasPara(width);
     const nomesCategoria = Object.fromEntries(categorias.map((c) => [c.id, c.nome]));
@@ -115,29 +114,27 @@ export default function Home() {
     );
 
     return (
-        <View style={styles.container}>
-            {/* why: as abas ficam montadas; sem o foco, a barra de status clara vazaria para Carrinho e Histórico. */}
-            {focada && <StatusBar style="light" />}
-            <View style={[styles.hero, { paddingTop: insets.top + espaco.lg }]}>
-                <SimboloA style={styles.simbolo} />
-                <View style={styles.largura}>
-                    <View style={styles.header}>
+        <View style={estilosTela.container}>
+            <FaixaMarca
+                titulo="Explore a loja"
+                topo={
+                    <>
                         <LogoBranco style={styles.logo} />
                         <BotaoIcone icone="log-out-outline" tamanho={20} comFundo inverso descricao="Sair da conta" onPress={logoutUser} />
-                    </View>
-                    <Text style={styles.titulo} accessibilityRole="header">Explore a loja</Text>
-                    <CampoBusca valor={textoBusca} onChange={setTextoBusca} />
-                </View>
-            </View>
+                    </>
+                }
+            >
+                <CampoBusca valor={textoBusca} onChange={setTextoBusca} />
+            </FaixaMarca>
 
             {categorias.length > 0 && (
-                <View style={[styles.largura, styles.filtros]}>
+                <View style={[larguraConteudo, styles.filtros]}>
                     <FiltroCategorias categorias={categorias} selecionada={categoria} onSelecionar={setCategoria} />
                 </View>
             )}
 
             {loading ? (
-                <View style={[styles.largura, styles.listaConteudo]}>
+                <View style={[larguraConteudo, styles.listaConteudo]}>
                     {cabecalhoSecao}
                     <EsqueletoGrade colunas={colunas} />
                 </View>
@@ -152,8 +149,7 @@ export default function Home() {
                 ListHeaderComponent={produtos.length > 0 ? cabecalhoSecao : undefined}
                 renderItem={({ item, index }) => (
                     <Animated.View
-                        // why: atraso limitado para que listas longas não demorem a aparecer por inteiro.
-                        entering={FadeInDown.duration(350).delay(Math.min(index, 8) * 60)}
+                        entering={entradaItem(index)}
                         style={[styles.celula, { maxWidth: `${100 / colunas}%` }]}
                     >
                         <ProdutoCard
@@ -168,7 +164,7 @@ export default function Home() {
                 )}
                 keyExtractor={(item) => item.id.toString()}
                 style={styles.lista}
-                contentContainerStyle={[styles.largura, styles.listaConteudo]}
+                contentContainerStyle={[larguraConteudo, styles.listaConteudo]}
                 columnWrapperStyle={styles.linha}
                 showsVerticalScrollIndicator={false}
                 ListEmptyComponent={
@@ -187,46 +183,8 @@ export default function Home() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: cores.fundo,
-    },
-    hero: {
-        backgroundColor: cores.primaria,
-        paddingHorizontal: espaco.tela,
-        paddingBottom: espaco.xl,
-        borderBottomLeftRadius: raio.xl,
-        borderBottomRightRadius: raio.xl,
-        overflow: "hidden",
-    },
-    simbolo: {
-        position: "absolute",
-        right: -espaco.xl,
-        bottom: -espaco.xl,
-        width: 150,
-        opacity: 0.1,
-    },
-    largura: {
-        width: "100%",
-        // why: na web larga a vitrine fica centralizada em vez de esticar de ponta a ponta.
-        maxWidth: 960,
-        alignSelf: "center",
-    },
-    header: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-    },
     logo: {
         width: 128,
-    },
-    titulo: {
-        marginTop: espaco.lg,
-        marginBottom: espaco.lg,
-        fontSize: fonte.titulo,
-        fontWeight: "800",
-        letterSpacing: -0.5,
-        color: cores.primariaTexto,
     },
     filtros: {
         paddingTop: espaco.lg,

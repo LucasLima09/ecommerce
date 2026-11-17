@@ -14,6 +14,7 @@ export const cores = {
     primariaTexto: "#FFFFFF",
     desabilitado: "#C9CAC4",
     sucesso: "#2F6B4F",
+    sucessoFundo: "#E6EFE9",
     erro: "#B3261E",
     neutroAtivo: "#EDEDE8",
     // why: fim do degradê do cartão de login/cadastro; perto do branco para o efeito ficar discreto.
@@ -67,4 +68,11 @@ export const sombra = {
         shadowOffset: { width: 0, height: 4 },
         elevation: 2,
     },
+} as const;
+
+// why: na web larga e no tablet o conteúdo fica centralizado em vez de esticar de ponta a ponta.
+export const larguraConteudo = {
+    width: "100%",
+    maxWidth: 960,
+    alignSelf: "center",
 } as const;

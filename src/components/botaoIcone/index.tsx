@@ -14,6 +14,8 @@ type BotaoIconeProps = {
     // why: sobre a faixa preta da marca o fundo do botão precisa ser translúcido e o ícone branco.
     inverso?: boolean;
     disabled?: boolean;
+    // why: ícones pequenos sem fundo precisam de folga maior para a área de toque chegar a 44.
+    folga?: number;
 };
 
 export default function BotaoIcone({
@@ -25,6 +27,7 @@ export default function BotaoIcone({
     comFundo = false,
     inverso = false,
     disabled = false,
+    folga = 10,
 }: BotaoIconeProps) {
     const { hover, hoverProps } = useHover();
     const corIcone = cor ?? (inverso ? cores.primariaTexto : cores.texto);
@@ -33,8 +36,7 @@ export default function BotaoIcone({
         <Pressable
             onPress={onPress}
             disabled={disabled}
-            // why: com o hitSlop a área de toque passa dos 44 mesmo quando o ícone é pequeno.
-            hitSlop={10}
+            hitSlop={folga}
             {...hoverProps}
             style={({ pressed }) => [
                 comFundo && styles.fundo,
