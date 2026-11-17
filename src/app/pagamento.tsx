@@ -1,15 +1,19 @@
 import BotaoIcone from "@/components/botaoIcone";
 import { Carregando, Erro } from "@/components/estadoTela";
+import FaixaMarca from "@/components/faixaMarca";
 import OpcaoPagamento from "@/components/opcaoPagamento";
 import ResumoCarrinho from "@/components/resumoCarrinho";
 import { useCarrinho } from "@/context/CarrinhoContext";
 import { getFormasPagamento } from "@/service/comprasService";
 import { FormaPagamento, FormaPagamentoId } from "@/types/compra";
 import { getMensagemErroApi } from "@/utils/errosApi";
+import { larguraConteudo } from "@/theme";
+import { estilosTela } from "@/theme/estilos";
+import { entradaItem } from "@/utils/animacoes";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, FlatList, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Alert, FlatList, View } from "react-native";
+import Animated from "react-native-reanimated";
 
 export default function PagamentoScreen() {
     const { carrinho, atualizando, finalizar } = useCarrinho();
@@ -56,12 +60,12 @@ export default function PagamentoScreen() {
     }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <BotaoIcone icone="chevron-back" tamanho={26} descricao="Voltar" onPress={router.back} />
-                <Text style={styles.titulo}>Pagamento</Text>
-            </View>
-            <Text style={styles.subtitulo}>Escolha a forma de pagamento</Text>
+        <View style={estilosTela.container}>
+            <FaixaMarca
+                titulo="Pagamento"
+                subtitulo="Escolha como prefere pagar"
+                topo={<BotaoIcone icone="chevron-back" tamanho={20} comFundo inverso descricao="Voltar" onPress={router.back} />}
+            />
 
             {loading ? (
                 <Carregando />
@@ -71,54 +75,30 @@ export default function PagamentoScreen() {
                 <FlatList
                     data={formas}
                     keyExtractor={(item) => item.id}
-                    contentContainerStyle={styles.lista}
-                    renderItem={({ item }) => (
-                        <OpcaoPagamento
-                            forma={item}
-                            selecionada={item.id === selecionada}
-                            onSelecionar={setSelecionada}
-                            desabilitado={atualizando}
-                        />
+                    style={estilosTela.lista}
+                    contentContainerStyle={[larguraConteudo, estilosTela.listaConteudo]}
+                    renderItem={({ item, index }) => (
+                        <Animated.View entering={entradaItem(index)}>
+                            <OpcaoPagamento
+                                forma={item}
+                                selecionada={item.id === selecionada}
+                                onSelecionar={setSelecionada}
+                                desabilitado={atualizando}
+                            />
+                        </Animated.View>
                     )}
                 />
             )}
 
             <ResumoCarrinho
                 total={carrinho?.total ?? 0}
+                quantidadeItens={carrinho?.quantidadeTotal}
                 tituloBotao="Confirmar pedido"
                 // invariant: não é possível finalizar sem uma forma de pagamento escolhida.
                 desabilitado={!selecionada}
                 loading={atualizando}
                 onConfirmar={confirmarPedido}
             />
-        </SafeAreaView>
+        </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        paddingHorizontal: 20,
-        paddingTop: 20,
-        backgroundColor: "#F2F2F7",
-    },
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 8,
-    },
-    titulo: {
-        fontSize: 28,
-        fontWeight: "700",
-        color: "#1C1C1E",
-    },
-    subtitulo: {
-        fontSize: 16,
-        color: "#636366",
-        marginTop: 4,
-    },
-    lista: {
-        paddingVertical: 16,
-        gap: 12,
-    },
-});
