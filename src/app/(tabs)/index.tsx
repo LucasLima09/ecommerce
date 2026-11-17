@@ -2,17 +2,28 @@ import BotaoIcone from "@/components/botaoIcone";
 import CampoBusca from "@/components/campoBusca";
 import FiltroCategorias from "@/components/filtroCategorias";
 import { getCategorias } from "@/service/categoriasService";
-import { Carregando, Erro } from "@/components/estadoTela";
+import { Erro, EstadoVazio } from "@/components/estadoTela";
+import EsqueletoGrade from "@/components/esqueletoProduto";
 import ProdutoCard from "@/components/produtoCard";
 import { logoutUser } from "@/service/authService";
 import { getProdutos } from "@/service/produtosService";
 import { Categoria, Produto } from "@/types/produto";
 import { useEffect, useState } from "react";
 import { useCarrinho } from "@/context/CarrinhoContext";
-import { router } from "expo-router";
-import { Image } from "expo-image";
-import { Alert, FlatList, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { router, useIsFocused } from "expo-router";
+import { LogoBranco, SimboloA } from "@/components/marca";
+import { StatusBar } from "expo-status-bar";
+import { cores, espaco, fonte, raio } from "@/theme";
+import { Alert, FlatList, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+// why: no celular a vitrine usa 2 colunas; tablet e web larga ganham mais colunas sem esticar as fotos.
+function colunasPara(largura: number) {
+    if (largura >= 1000) return 4;
+    if (largura >= 700) return 3;
+    return 2;
+}
 
 export default function Home() {
 
@@ -60,96 +71,199 @@ export default function Home() {
         };
     }, [busca, categoria, tentativa]);
 
-    async function adicionarAoCarrinho(produto: Produto) {
+    // why: o sucesso aparece no próprio botão do card ("Adicionado"); só o erro precisa de alerta.
+    async function adicionarAoCarrinho(produto: Produto): Promise<boolean> {
         try {
             await adicionar(produto.id);
-            Alert.alert("Carrinho", `${produto.nome} foi adicionado ao carrinho.`);
+            return true;
         } catch (e) {
             Alert.alert("Não foi possível adicionar", (e as Error).message);
+            return false;
         }
     }
 
     const tentarNovamente = () => setTentativa((t) => t + 1);
+    const limparFiltros = () => {
+        setTextoBusca("");
+        setCategoria(null);
+    };
+
+    const insets = useSafeAreaInsets();
+    const focada = useIsFocused();
+    const { width } = useWindowDimensions();
+    const colunas = colunasPara(width);
+    const nomesCategoria = Object.fromEntries(categorias.map((c) => [c.id, c.nome]));
+    const temFiltro = !!busca || categoria !== null;
+
+    const tituloSecao = busca
+        ? `Resultados para “${busca}”`
+        : categoria
+          ? (nomesCategoria[categoria] ?? "Produtos")
+          : "Todos os produtos";
+
+    const cabecalhoSecao = (
+        <View style={styles.secao}>
+            <Text style={styles.secaoTitulo} numberOfLines={1}>
+                {tituloSecao}
+            </Text>
+            {!loading && !erro && (
+                <Text style={styles.secaoContagem}>
+                    {produtos.length} {produtos.length === 1 ? "item" : "itens"}
+                </Text>
+            )}
+        </View>
+    );
 
     return (
-        <SafeAreaView style={styles.container} edges={["top"]}>
-            <View style={styles.header}>
-                <Image
-                    source={require("@/assets/images/logo-attura.png")}
-                    style={styles.logo}
-                    contentFit="contain"
-                    accessibilityLabel="ATTURA"
-                />
-                <BotaoIcone icone="log-out-outline" tamanho={26} descricao="Sair da conta" onPress={logoutUser} />
+        <View style={styles.container}>
+            {/* why: as abas ficam montadas; sem o foco, a barra de status clara vazaria para Carrinho e Histórico. */}
+            {focada && <StatusBar style="light" />}
+            <View style={[styles.hero, { paddingTop: insets.top + espaco.lg }]}>
+                <SimboloA style={styles.simbolo} />
+                <View style={styles.largura}>
+                    <View style={styles.header}>
+                        <LogoBranco style={styles.logo} />
+                        <BotaoIcone icone="log-out-outline" tamanho={20} comFundo inverso descricao="Sair da conta" onPress={logoutUser} />
+                    </View>
+                    <Text style={styles.titulo} accessibilityRole="header">Explore a loja</Text>
+                    <CampoBusca valor={textoBusca} onChange={setTextoBusca} />
+                </View>
             </View>
-            <Text style={styles.subtitle}>Bem vindo!</Text>
-            <Text>Tudo que você precisa aqui</Text>
-            <View style={styles.busca}>
-                <CampoBusca valor={textoBusca} onChange={setTextoBusca} />
-                {categorias.length > 0 && (
+
+            {categorias.length > 0 && (
+                <View style={[styles.largura, styles.filtros]}>
                     <FiltroCategorias categorias={categorias} selecionada={categoria} onSelecionar={setCategoria} />
-                )}
-            </View>
+                </View>
+            )}
+
             {loading ? (
-                <Carregando />
+                <View style={[styles.largura, styles.listaConteudo]}>
+                    {cabecalhoSecao}
+                    <EsqueletoGrade colunas={colunas} />
+                </View>
             ) : erro ? (
                 <Erro mensagem={erro} onTentarNovamente={tentarNovamente} />
             ) : (
             <FlatList
+                // why: o FlatList não aceita trocar numColumns em tempo real; a key nova recria a lista.
+                key={`colunas-${colunas}`}
+                numColumns={colunas}
                 data={produtos}
-                renderItem={({ item }) => (
-                    <ProdutoCard
-                        produto={item}
-                        onAddToCart={adicionarAoCarrinho}
-                        onPress={(produto) =>
-                            router.push({ pathname: "/produto/[id]", params: { id: produto.id.toString() } })
-                        }
-                    />
+                ListHeaderComponent={produtos.length > 0 ? cabecalhoSecao : undefined}
+                renderItem={({ item, index }) => (
+                    <Animated.View
+                        // why: atraso limitado para que listas longas não demorem a aparecer por inteiro.
+                        entering={FadeInDown.duration(350).delay(Math.min(index, 8) * 60)}
+                        style={[styles.celula, { maxWidth: `${100 / colunas}%` }]}
+                    >
+                        <ProdutoCard
+                            produto={item}
+                            nomeCategoria={nomesCategoria[item.categoria]}
+                            onAddToCart={adicionarAoCarrinho}
+                            onPress={(produto) =>
+                                router.push({ pathname: "/produto/[id]", params: { id: produto.id.toString() } })
+                            }
+                        />
+                    </Animated.View>
                 )}
                 keyExtractor={(item) => item.id.toString()}
-                contentContainerStyle={styles.list}
+                style={styles.lista}
+                contentContainerStyle={[styles.largura, styles.listaConteudo]}
+                columnWrapperStyle={styles.linha}
                 showsVerticalScrollIndicator={false}
-                ListEmptyComponent={<Text style={styles.vazio}>Nenhum produto encontrado.</Text>}
+                ListEmptyComponent={
+                    <EstadoVazio
+                        icone="search-outline"
+                        titulo="Nenhum produto encontrado"
+                        mensagem={temFiltro ? "Tente outra busca ou categoria." : undefined}
+                        acao={temFiltro ? "Limpar filtros" : undefined}
+                        onAcao={temFiltro ? limparFiltros : undefined}
+                    />
+                }
             />
             )}
-        </SafeAreaView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        paddingHorizontal: 20,
-        paddingTop: 20,
         flex: 1,
-        backgroundColor: "#F2F2F7",
+        backgroundColor: cores.fundo,
+    },
+    hero: {
+        backgroundColor: cores.primaria,
+        paddingHorizontal: espaco.lg + espaco.xs,
+        paddingBottom: espaco.xl,
+        borderBottomLeftRadius: raio.lg + espaco.sm,
+        borderBottomRightRadius: raio.lg + espaco.sm,
+        overflow: "hidden",
+    },
+    simbolo: {
+        position: "absolute",
+        right: -espaco.xl,
+        bottom: -espaco.xl,
+        width: 150,
+        opacity: 0.1,
+    },
+    largura: {
+        width: "100%",
+        // why: na web larga a vitrine fica centralizada em vez de esticar de ponta a ponta.
+        maxWidth: 960,
+        alignSelf: "center",
     },
     header: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
     },
-    busca: {
-        marginTop: 16,
-        gap: 12,
-    },
-    vazio: {
-        marginTop: 32,
-        fontSize: 15,
-        color: "#8E8E93",
-        textAlign: "center",
-    },
-    list: {
-        paddingTop: 16,
-        paddingBottom: 24,
-        gap: 14,
-    },
     logo: {
-        width: 150,
-        aspectRatio: 1849 / 349,
+        width: 128,
     },
-    subtitle: {
-        fontSize: 16,
-        color: "#636366",
-        marginTop: 4,
+    titulo: {
+        marginTop: espaco.lg,
+        marginBottom: espaco.lg,
+        fontSize: fonte.titulo,
+        fontWeight: "800",
+        letterSpacing: -0.5,
+        color: cores.primariaTexto,
+    },
+    filtros: {
+        paddingTop: espaco.lg,
+        paddingHorizontal: espaco.lg + espaco.xs,
+    },
+    lista: {
+        flex: 1,
+    },
+    listaConteudo: {
+        flexGrow: 1,
+        paddingHorizontal: espaco.lg + espaco.xs,
+        paddingTop: espaco.lg,
+        paddingBottom: espaco.xl,
+        gap: espaco.md,
+    },
+    linha: {
+        gap: espaco.md,
+    },
+    secao: {
+        flexDirection: "row",
+        alignItems: "baseline",
+        justifyContent: "space-between",
+        gap: espaco.md,
+    },
+    secaoTitulo: {
+        flex: 1,
+        fontSize: fonte.subtitulo,
+        fontWeight: "700",
+        letterSpacing: -0.3,
+        color: cores.texto,
+    },
+    secaoContagem: {
+        fontSize: fonte.pequeno,
+        color: cores.textoSecundario,
+    },
+    celula: {
+        // why: o maxWidth por coluna (inline) impede que a última linha incompleta estique os cards.
+        flex: 1,
     },
 });
