@@ -1,7 +1,7 @@
 import Botao from "@/components/botao";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { cores, espaco, fonte, raio, TOQUE_MIN } from "@/theme";
-import { Image } from "expo-image";
+import { LogoBranco, SimboloA } from "@/components/marca";
 import { Href, Link } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
@@ -58,21 +58,11 @@ export default function TelaAuth({ titulo, subtitulo, erroGeral, children, acao,
                             entering={FadeIn.duration(900).delay(150)}
                             style={[styles.simbolo, { top: insets.top + (compacta ? espaco.lg : espaco.xxl) }]}
                         >
-                            <Image
-                                source={require("@/assets/images/simbolo-a.png")}
-                                style={styles.flex}
-                                contentFit="contain"
-                                accessible={false}
-                            />
+                            <SimboloA style={styles.flex} />
                         </Animated.View>
 
                         <Animated.View entering={FadeInDown.duration(500)} style={styles.largura}>
-                            <Image
-                                source={require("@/assets/images/logo-attura-branco.png")}
-                                style={[styles.logo, compacta && styles.logoCompacto]}
-                                contentFit="contain"
-                                accessibilityLabel="ATTURA"
-                            />
+                            <LogoBranco style={[styles.logo, compacta && styles.logoCompacto]} />
                             <Text
                                 style={[styles.slogan, { fontSize: tamanhoSlogan, lineHeight: tamanhoSlogan * 1.15 }]}
                                 accessibilityRole="header"
@@ -169,7 +159,6 @@ const styles = StyleSheet.create({
     },
     logo: {
         width: 140,
-        aspectRatio: 1849 / 349,
         marginBottom: espaco.lg,
     },
     logoCompacto: {
