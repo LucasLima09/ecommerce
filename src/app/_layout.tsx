@@ -1,5 +1,6 @@
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { CarrinhoProvider } from "@/context/CarrinhoContext";
+import { HistoricoProvider } from "@/context/HistoricoContext";
 import { Stack } from "expo-router";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
@@ -7,9 +8,12 @@ export default function RootLayout() {
 
     return (
         <AuthProvider>
-            <CarrinhoProvider>
-                <RootNavigator />
-            </CarrinhoProvider>
+            {/* invariant: HistoricoProvider fica por fora porque o CarrinhoProvider registra a compra nele ao finalizar. */}
+            <HistoricoProvider>
+                <CarrinhoProvider>
+                    <RootNavigator />
+                </CarrinhoProvider>
+            </HistoricoProvider>
         </AuthProvider>
     );
 }
