@@ -27,6 +27,15 @@ const TabsLayout = () => {
                     ),
                 }}
             />
+            <Tabs.Screen
+                name="historico"
+                options={{
+                    title: "Histórico",
+                    tabBarIcon: ({ color, size }) => (
+                        <Ionicons name="receipt-outline" color={color as string} size={size} />
+                    ),
+                }}
+            />
         </Tabs>
     );
 };

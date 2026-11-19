@@ -1,4 +1,5 @@
 import { useAuth } from "@/context/AuthContext";
+import { useHistorico } from "@/context/HistoricoContext";
 import {
     addItemCarrinho,
     editarItemCarrinho,
@@ -37,6 +38,7 @@ export function useCarrinho() {
 
 export function CarrinhoProvider({ children }: PropsWithChildren) {
     const { user } = useAuth();
+    const { registrarCompra } = useHistorico();
     // invariant: o uid do Firebase é o usuarioId da API, então cada conta tem o próprio carrinho.
     const usuarioId = user?.uid ?? null;
 
@@ -115,6 +117,7 @@ export function CarrinhoProvider({ children }: PropsWithChildren) {
         setAtualizando(true);
         try {
             const compra = await finalizarCompra({ usuarioId, formaPagamento });
+            registrarCompra(compra);
             // why: a API esvazia o carrinho ao registrar a compra; sem isso o badge e a tela do carrinho mostrariam os itens antigos.
             setEstado({ usuarioId, carrinho: { usuarioId, itens: [], quantidadeTotal: 0, total: 0 }, erro: null });
             return compra;
