@@ -1,11 +1,16 @@
-import { Carregando, Erro } from "@/components/estadoTela";
-import CarrinhoVazio from "@/components/carrinhoVazio";
+import BarraInferior from "@/components/barraInferior";
+import Botao from "@/components/botao";
+import { Carregando, Erro, EstadoVazio } from "@/components/estadoTela";
+import FaixaMarca from "@/components/faixaMarca";
 import ItemCarrinhoCard from "@/components/itemCarrinhoCard";
 import ResumoCarrinho from "@/components/resumoCarrinho";
 import { useCarrinho } from "@/context/CarrinhoContext";
+import { larguraConteudo } from "@/theme";
+import { estilosTela } from "@/theme/estilos";
+import { entradaItem } from "@/utils/animacoes";
 import { router } from "expo-router";
-import { Alert, FlatList, StyleSheet, Text } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Alert, FlatList, View } from "react-native";
+import Animated from "react-native-reanimated";
 
 export default function CarrinhoScreen() {
     const { carrinho, loading, erro, atualizando, recarregar, alterarQuantidade, remover } = useCarrinho();
@@ -19,61 +24,69 @@ export default function CarrinhoScreen() {
         }
     }
 
-    if (loading) return <Carregando />;
-    if (erro || !carrinho) {
-        return <Erro mensagem={erro ?? "Não foi possível carregar o carrinho."} onTentarNovamente={recarregar} />;
-    }
+    const quantidade = carrinho?.quantidadeTotal ?? 0;
+    const vazio = !carrinho || carrinho.itens.length === 0;
 
-    const vazio = carrinho.itens.length === 0;
-
-    return (
-        <SafeAreaView style={styles.container} edges={["top"]}>
-            <Text style={styles.titulo}>Carrinho</Text>
-
-            {vazio ? (
-                <CarrinhoVazio />
-            ) : (
+    function conteudo() {
+        if (loading) return <Carregando />;
+        if (erro || !carrinho) {
+            return <Erro mensagem={erro ?? "Não foi possível carregar o carrinho."} onTentarNovamente={recarregar} />;
+        }
+        if (vazio) {
+            return (
+                <>
+                    <EstadoVazio
+                        icone="bag-outline"
+                        titulo="Seu carrinho está vazio"
+                        mensagem="Explore a vitrine e adicione os produtos que quiser."
+                        acao="Explorar produtos"
+                        onAcao={() => router.navigate("/")}
+                    />
+                    {/* invariant: o botão de finalizar continua visível, mas desativado, enquanto o carrinho está vazio. */}
+                    <BarraInferior>
+                        <Botao title="Finalizar compra" onPress={() => {}} disabled />
+                    </BarraInferior>
+                </>
+            );
+        }
+        return (
+            <>
                 <FlatList
                     data={carrinho.itens}
                     keyExtractor={(item) => item.produtoId.toString()}
-                    contentContainerStyle={styles.lista}
+                    style={estilosTela.lista}
+                    contentContainerStyle={[larguraConteudo, estilosTela.listaConteudo]}
                     showsVerticalScrollIndicator={false}
-                    renderItem={({ item }) => (
-                        <ItemCarrinhoCard
-                            item={item}
-                            desabilitado={atualizando}
-                            onAumentar={() => tentar(() => alterarQuantidade(item.produtoId, item.quantidade + 1))}
-                            onDiminuir={() => tentar(() => alterarQuantidade(item.produtoId, item.quantidade - 1))}
-                            onRemover={() => tentar(() => remover(item.produtoId))}
-                        />
+                    renderItem={({ item, index }) => (
+                        <Animated.View entering={entradaItem(index)}>
+                            <ItemCarrinhoCard
+                                item={item}
+                                desabilitado={atualizando}
+                                onAumentar={() => tentar(() => alterarQuantidade(item.produtoId, item.quantidade + 1))}
+                                onDiminuir={() => tentar(() => alterarQuantidade(item.produtoId, item.quantidade - 1))}
+                                onRemover={() => tentar(() => remover(item.produtoId))}
+                            />
+                        </Animated.View>
                     )}
                 />
-            )}
 
-            <ResumoCarrinho
-                total={carrinho.total}
-                tituloBotao="Finalizar compra"
-                desabilitado={vazio}
-                onConfirmar={() => router.push("/pagamento")}
+                <ResumoCarrinho
+                    total={carrinho.total}
+                    quantidadeItens={quantidade}
+                    tituloBotao="Finalizar compra"
+                    onConfirmar={() => router.push("/pagamento")}
+                />
+            </>
+        );
+    }
+
+    return (
+        <View style={estilosTela.container}>
+            <FaixaMarca
+                titulo="Carrinho"
+                subtitulo={vazio ? undefined : `${quantidade} ${quantidade === 1 ? "item" : "itens"} na sacola`}
             />
-        </SafeAreaView>
+            {conteudo()}
+        </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        paddingHorizontal: 20,
-        paddingTop: 20,
-        backgroundColor: "#F2F2F7",
-    },
-    titulo: {
-        fontSize: 28,
-        fontWeight: "700",
-        color: "#1C1C1E",
-    },
-    lista: {
-        paddingVertical: 16,
-        gap: 12,
-    },
-});

@@ -1,3 +1,5 @@
+import { useHover } from "@/hooks/useHover";
+import { cores, fonte, raio, sombra } from "@/theme";
 import { ActivityIndicator, Pressable, StyleSheet, Text } from "react-native";
 
 type BotaoProps = {
@@ -9,21 +11,25 @@ type BotaoProps = {
 
 export default function Botao({ title, onPress, loading, disabled }: BotaoProps) {
     const inactive = disabled || loading;
+    const { hover, hoverProps } = useHover();
 
     return (
         <Pressable
             style={({ pressed }) => [
                 styles.button,
                 inactive && styles.buttonDisabled,
+                hover && !inactive && styles.buttonHover,
                 pressed && !inactive && styles.buttonPressed,
             ]}
+            {...hoverProps}
             onPress={onPress}
             disabled={inactive}
             accessibilityRole="button"
             accessibilityLabel={title}
+            accessibilityState={{ disabled: !!inactive, busy: !!loading }}
         >
             {loading ? (
-                <ActivityIndicator color="#FFFFFF" />
+                <ActivityIndicator color={cores.primariaTexto} />
             ) : (
                 <Text style={styles.text}>{title}</Text>
             )}
@@ -33,21 +39,27 @@ export default function Botao({ title, onPress, loading, disabled }: BotaoProps)
 
 const styles = StyleSheet.create({
     button: {
-        backgroundColor: "#1C1C1E",
+        backgroundColor: cores.primaria,
         height: 52,
-        borderRadius: 980,
+        borderRadius: raio.md,
         alignItems: "center",
         justifyContent: "center",
     },
+    buttonHover: {
+        backgroundColor: cores.primariaHover,
+        transform: [{ translateY: -1 }],
+        ...sombra.suave,
+    },
     buttonPressed: {
-        opacity: 0.7,
+        opacity: 0.85,
+        transform: [{ scale: 0.98 }],
     },
     buttonDisabled: {
-        backgroundColor: "#C7C7CC",
+        backgroundColor: cores.desabilitado,
     },
     text: {
-        color: "#FFFFFF",
-        fontSize: 16,
+        color: cores.primariaTexto,
+        fontSize: fonte.corpo,
         fontWeight: "600",
     },
 });

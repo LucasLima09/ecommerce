@@ -1,5 +1,7 @@
 import BotaoIcone from "@/components/botaoIcone";
+import { cores, espaco, fonte, raio } from "@/theme";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useState } from "react";
 import { StyleSheet, TextInput, View } from "react-native";
 
 type CampoBuscaProps = {
@@ -9,22 +11,26 @@ type CampoBuscaProps = {
 };
 
 export default function CampoBusca({ valor, onChange, placeholder = "Buscar produtos" }: CampoBuscaProps) {
+    const [focado, setFocado] = useState(false);
+
     return (
-        <View style={styles.campo}>
-            <Ionicons name="search" size={18} color="#8E8E93" />
+        <View style={[styles.campo, focado && styles.campoFocado]}>
+            <Ionicons name="search" size={20} color={focado ? cores.texto : cores.textoSuave} />
             <TextInput
                 style={styles.input}
                 value={valor}
                 onChangeText={onChange}
                 placeholder={placeholder}
-                placeholderTextColor="#C7C7CC"
+                placeholderTextColor={cores.textoSuave}
                 autoCapitalize="none"
                 autoCorrect={false}
                 returnKeyType="search"
                 accessibilityLabel={placeholder}
+                onFocus={() => setFocado(true)}
+                onBlur={() => setFocado(false)}
             />
             {valor.length > 0 && (
-                <BotaoIcone icone="close-circle" cor="#C7C7CC" tamanho={18} descricao="Limpar busca" onPress={() => onChange("")} />
+                <BotaoIcone icone="close-circle" cor={cores.textoSuave} tamanho={20} descricao="Limpar busca" onPress={() => onChange("")} />
             )}
         </View>
     );
@@ -34,17 +40,23 @@ const styles = StyleSheet.create({
     campo: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 8,
-        height: 44,
-        paddingHorizontal: 12,
-        borderRadius: 12,
-        backgroundColor: "#FFFFFF",
-        borderWidth: StyleSheet.hairlineWidth,
-        borderColor: "#E5E5EA",
+        gap: espaco.md,
+        height: 48,
+        paddingHorizontal: espaco.lg,
+        borderRadius: raio.md,
+        backgroundColor: cores.superficie,
+        borderWidth: 2,
+        borderColor: "transparent",
+    },
+    campoFocado: {
+        borderColor: cores.bordaHover,
     },
     input: {
         flex: 1,
-        fontSize: 16,
-        color: "#1C1C1E",
+        minWidth: 0,
+        fontSize: fonte.corpo,
+        color: cores.texto,
+        height: "100%",
+        outlineWidth: 0,
     },
 });
