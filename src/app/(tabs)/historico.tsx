@@ -1,61 +1,58 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
 import CompraCard from "@/components/compraCard";
-import { Carregando } from "@/components/estadoTela";
+import { Carregando, EstadoVazio } from "@/components/estadoTela";
+import FaixaMarca from "@/components/faixaMarca";
 import { useHistorico } from "@/context/HistoricoContext";
-import { FlatList, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { larguraConteudo } from "@/theme";
+import { estilosTela } from "@/theme/estilos";
+import { entradaItem } from "@/utils/animacoes";
+import { router } from "expo-router";
+import { FlatList, View } from "react-native";
+import Animated from "react-native-reanimated";
 
 export default function HistoricoScreen() {
     const { compras, loading } = useHistorico();
 
-    if (loading) return <Carregando />;
+    const quantidade = compras.length;
+    const vazio = quantidade === 0;
+
+    function conteudo() {
+        if (loading) return <Carregando />;
+        if (vazio) {
+            return (
+                <EstadoVazio
+                    icone="receipt-outline"
+                    titulo="Nenhuma compra ainda"
+                    mensagem="Quando você finalizar um pedido, ele aparece aqui."
+                    acao="Explorar produtos"
+                    onAcao={() => router.navigate("/")}
+                />
+            );
+        }
+        return (
+            <FlatList
+                data={compras}
+                keyExtractor={(item) => item.id.toString()}
+                style={estilosTela.lista}
+                contentContainerStyle={[larguraConteudo, estilosTela.listaConteudo]}
+                showsVerticalScrollIndicator={false}
+                renderItem={({ item, index }) => (
+                    <Animated.View entering={entradaItem(index)}>
+                        <CompraCard compra={item} />
+                    </Animated.View>
+                )}
+            />
+        );
+    }
 
     return (
-        <SafeAreaView style={styles.container} edges={["top"]}>
-            <Text style={styles.titulo}>Histórico</Text>
-
-            {compras.length === 0 ? (
-                <View style={styles.vazio}>
-                    <Ionicons name="receipt-outline" size={56} color="#C7C7CC" />
-                    <Text style={styles.vazioTexto}>Você ainda não fez nenhuma compra.</Text>
-                </View>
-            ) : (
-                <FlatList
-                    data={compras}
-                    keyExtractor={(item) => item.id.toString()}
-                    contentContainerStyle={styles.lista}
-                    showsVerticalScrollIndicator={false}
-                    renderItem={({ item }) => <CompraCard compra={item} />}
-                />
-            )}
-        </SafeAreaView>
+        <View style={estilosTela.container}>
+            <FaixaMarca
+                titulo="Histórico"
+                subtitulo={
+                    loading || vazio ? undefined : `${quantidade} ${quantidade === 1 ? "pedido realizado" : "pedidos realizados"}`
+                }
+            />
+            {conteudo()}
+        </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        paddingHorizontal: 20,
-        paddingTop: 20,
-        backgroundColor: "#F2F2F7",
-    },
-    titulo: {
-        fontSize: 28,
-        fontWeight: "700",
-        color: "#1C1C1E",
-    },
-    lista: {
-        paddingVertical: 16,
-        gap: 12,
-    },
-    vazio: {
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 12,
-    },
-    vazioTexto: {
-        fontSize: 16,
-        color: "#8E8E93",
-    },
-});
