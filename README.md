@@ -1,56 +1,109 @@
-# Welcome to your Expo app 👋
+# ATTURA
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+ATTURA é uma loja virtual para celular onde o cliente cria a conta, encontra produtos por categoria ou busca, monta o carrinho e finaliza a compra em poucos toques.
 
-## Get started
+Trabalho final de **Desenvolvimento de Aplicativos Móveis** — Prof. William Barrilli.
 
-1. Install dependencies
+## Integrantes
+
+- Samuel Aloísio De Bastiani
+- Lucas de Lima
+
+## Fluxo do app
+
+Conta e login → catálogo → detalhes → carrinho → pagamento → pedido confirmado → histórico.
+
+| Login | Cadastro | Catálogo |
+| :---: | :---: | :---: |
+| <img src="docs/01-login.png" width="240" /> | <img src="docs/02-cadastro.png" width="240" /> | <img src="docs/03-catalogo.png" width="240" /> |
+
+| Filtro: Eletrônicos | Filtro: Roupas | Detalhes do produto |
+| :---: | :---: | :---: |
+| <img src="docs/04-filtro-eletronicos.png" width="240" /> | <img src="docs/05-filtro-roupas.png" width="240" /> | <img src="docs/06-detalhes.png" width="240" /> |
+
+| Carrinho | Pagamento | Pedido confirmado |
+| :---: | :---: | :---: |
+| <img src="docs/07-carrinho.png" width="240" /> | <img src="docs/08-pagamento.png" width="240" /> | <img src="docs/09-pedido-confirmado.png" width="240" /> |
+
+| Histórico |
+| :---: |
+| <img src="docs/10-historico.png" width="240" /> |
+
+## Funcionalidades
+
+- **Conta e login:** cadastro com nome, e-mail e senha, login e logout pela API da loja (`POST /usuarios` e `POST /login`). Os campos são validados e os erros aparecem em português.
+- **Sessão:** o token JWT fica salvo no aparelho; ao reabrir o app, o usuário continua logado. Se o token vencer, o app volta para o login.
+- **Telas protegidas:** a loja só abre para usuários logados.
+- **Catálogo:** lista de produtos com imagem, nome e preço em reais, filtro por categoria, busca por nome e tela de detalhes. Mostra carregamento e erro com opção de tentar de novo.
+- **Carrinho:** adicionar, aumentar, diminuir (diminuir a partir de 1 remove o item) e remover. O total de itens aparece fixo no ícone da aba. Com o carrinho vazio, o botão de finalizar fica desativado. Erros da API, como estoque insuficiente, são mostrados ao usuário.
+- **Pagamento:** formas de pagamento vindas da API (Pix, cartão e boleto); não é possível finalizar sem escolher uma.
+- **Pedido confirmado:** número do pedido, itens e total; o carrinho volta vazio.
+- **Histórico (extra):** lista das compras do usuário, vinda da API.
+
+## Tecnologias
+
+- React Native com Expo e TypeScript
+- Expo Router (navegação baseada no React Navigation, com rotas tipadas)
+- Axios para as chamadas à API
+- AsyncStorage para guardar a sessão
+
+## Como rodar o projeto
+
+Pré-requisitos: Node.js instalado e o app **Expo Go** no celular (ou um emulador).
+
+1. Clone o repositório e entre na pasta:
+
+   ```bash
+   git clone https://github.com/LucasLima09/ecommerce.git
+   cd ecommerce
+   ```
+
+2. Instale as dependências:
 
    ```bash
    npm install
    ```
 
-2. Start the app
+3. Crie o arquivo `.env` na raiz do projeto com a chave da API (a chave está no enunciado do trabalho):
+
+   ```bash
+   EXPO_PUBLIC_API_KEY=sua-chave-aqui
+   ```
+
+   O `.env` está no `.gitignore`, então a chave nunca vai para o repositório.
+
+4. Inicie o projeto:
 
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+5. Escaneie o QR code com o Expo Go (celular e computador na mesma rede Wi-Fi), ou aperte `a` para abrir no emulador Android.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Organização do código
 
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+src/
+├── app/          # telas (cada arquivo é uma rota do Expo Router)
+│   ├── (auth)/   # login e cadastro
+│   ├── (tabs)/   # Home (catálogo), Carrinho e Histórico
+│   ├── produto/  # detalhes do produto
+│   ├── pedido/   # confirmação do pedido
+│   └── pagamento.tsx
+├── api/          # cliente HTTP (axios) e sessão salva no aparelho
+├── service/      # todas as chamadas à API, separadas por assunto
+├── context/      # estado compartilhado: autenticação, carrinho e histórico
+├── components/   # componentes reutilizáveis com props tipadas
+├── types/        # tipos dos dados da API
+├── theme/        # cores, espaçamentos e fontes do app
+└── utils/        # formatação de preço e data, validações, mensagens de erro
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+- **Chamadas à API:** ficam todas em `src/service/`, nenhuma tela chama a API diretamente. O axios rejeita qualquer resposta fora de 2xx (o equivalente a conferir `resposta.ok`), e a mensagem do campo `erro` da API é mostrada ao usuário.
+- **Token:** o `apiClient` envia `Authorization: Bearer <token>` em todas as chamadas, então as rotas de carrinho e compras não precisam de `usuarioId`.
 
-### Other setup steps
+## Por que Context API para o carrinho
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+O carrinho é usado em várias telas ao mesmo tempo: a Home (botão de adicionar), os detalhes do produto, a aba do carrinho, o contador fixo na barra de abas e a tela de pagamento. Com o **Context API** (`CarrinhoContext`), o carrinho fica em um único lugar e todas essas telas leem e atualizam o mesmo estado, sem precisar passar props de tela em tela.
 
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Escolhemos o Context porque ele já vem com o React, não precisa de biblioteca extra e é suficiente para o tamanho do app. O mesmo padrão é usado para a autenticação (`AuthContext`) e para o histórico (`HistoricoContext`).
