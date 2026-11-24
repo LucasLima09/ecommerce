@@ -6,8 +6,8 @@ export async function finalizarCompra(compra: NovaCompra): Promise<Compra> {
     return data;
 }
 
-export async function getCompras(usuarioId: string): Promise<Compra[]> {
-    const { data } = await apiClient.get<Compra[]>("/compras", { params: { usuarioId } });
+export async function getCompras(): Promise<Compra[]> {
+    const { data } = await apiClient.get<Compra[]>("/compras");
     return data;
 }
 
