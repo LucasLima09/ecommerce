@@ -1,21 +1,27 @@
+import BarraInferior from "@/components/barraInferior";
 import Botao from "@/components/botao";
 import BotaoIcone from "@/components/botaoIcone";
 import { Carregando, Erro } from "@/components/estadoTela";
+import FaixaMarca from "@/components/faixaMarca";
 import { useCarrinho } from "@/context/CarrinhoContext";
+import { getCategorias } from "@/service/categoriasService";
 import { getProdutoById } from "@/service/produtosService";
-import { Produto } from "@/types/produto";
+import { cores, espaco, fonte, larguraConteudo, raio } from "@/theme";
+import { estilosTela } from "@/theme/estilos";
+import { Categoria, Produto } from "@/types/produto";
 import { getMensagemErroApi } from "@/utils/errosApi";
 import { formatarPreco } from "@/utils/formatarPreco";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProdutoScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const { adicionar, atualizando } = useCarrinho();
     const [produto, setProduto] = useState<Produto | null>(null);
+    const [categorias, setCategorias] = useState<Categoria[]>([]);
     const [erro, setErro] = useState<string | null>(null);
     // why: incrementar dispara uma nova busca pelo botão "Tentar novamente"
     const [tentativa, setTentativa] = useState(0);
@@ -38,6 +44,11 @@ export default function ProdutoScreen() {
         };
     }, [id, tentativa]);
 
+    // why: o produto só traz o id da categoria ("eletronicos"); se a lista falhar, a tela mostra o id mesmo.
+    useEffect(() => {
+        getCategorias().then(setCategorias).catch(() => setCategorias([]));
+    }, []);
+
     async function adicionarAoCarrinho(item: Produto) {
         try {
             await adicionar(item.id);
@@ -48,92 +59,143 @@ export default function ProdutoScreen() {
         }
     }
 
-    if (erro) return <Erro mensagem={erro} onTentarNovamente={() => setTentativa((t) => t + 1)} />;
-    if (!produto) return <Carregando />;
+    function conteudo() {
+        if (erro) return <Erro mensagem={erro} onTentarNovamente={() => setTentativa((t) => t + 1)} />;
+        if (!produto) return <Carregando />;
 
-    const semEstoque = produto.estoque <= 0;
+        const semEstoque = produto.estoque <= 0;
+        const nomeCategoria = categorias.find((c) => c.id === produto.categoria)?.nome ?? produto.categoria;
+
+        return (
+            <>
+                <ScrollView
+                    style={estilosTela.lista}
+                    contentContainerStyle={[larguraConteudo, styles.conteudo]}
+                    showsVerticalScrollIndicator={false}
+                >
+                    <View style={styles.imagemBox}>
+                        <Image source={{ uri: produto.imagem }} style={styles.imagem} contentFit="cover" transition={200} />
+                    </View>
+
+                    <View style={styles.cartao}>
+                        <View style={styles.selo}>
+                            <Text style={styles.seloTexto}>{nomeCategoria}</Text>
+                        </View>
+
+                        <Text style={styles.nome}>{produto.nome}</Text>
+                        <Text style={styles.preco}>{formatarPreco(produto.preco)}</Text>
+
+                        <View style={styles.estoque}>
+                            <Ionicons
+                                name={semEstoque ? "close-circle" : "checkmark-circle"}
+                                size={18}
+                                color={semEstoque ? cores.erro : cores.sucesso}
+                            />
+                            <Text style={[styles.estoqueTexto, { color: semEstoque ? cores.erro : cores.sucesso }]}>
+                                {semEstoque ? "Sem estoque" : `${produto.estoque} unidade(s) em estoque`}
+                            </Text>
+                        </View>
+                    </View>
+
+                    <View style={styles.cartao}>
+                        <Text style={styles.tituloSecao}>Descrição</Text>
+                        <Text style={styles.descricao}>{produto.descricao}</Text>
+                    </View>
+                </ScrollView>
+
+                <BarraInferior>
+                    <Botao
+                        title={semEstoque ? "Indisponível" : "Adicionar ao carrinho"}
+                        onPress={() => adicionarAoCarrinho(produto)}
+                        disabled={semEstoque}
+                        loading={atualizando}
+                    />
+                </BarraInferior>
+            </>
+        );
+    }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <BotaoIcone icone="chevron-back" tamanho={26} descricao="Voltar" onPress={router.back} />
-            </View>
-
-            <ScrollView contentContainerStyle={styles.conteudo} showsVerticalScrollIndicator={false}>
-                <Image source={{ uri: produto.imagem }} style={styles.imagem} contentFit="cover" transition={200} />
-
-                <Text style={styles.categoria}>{produto.categoria}</Text>
-                <Text style={styles.nome}>{produto.nome}</Text>
-                <Text style={styles.preco}>{formatarPreco(produto.preco)}</Text>
-                <Text style={styles.estoque}>
-                    {semEstoque ? "Sem estoque" : `${produto.estoque} unidade(s) em estoque`}
-                </Text>
-                <Text style={styles.descricao}>{produto.descricao}</Text>
-            </ScrollView>
-
-            <View style={styles.rodape}>
-                <Botao
-                    title={semEstoque ? "Indisponível" : "Adicionar ao carrinho"}
-                    onPress={() => adicionarAoCarrinho(produto)}
-                    disabled={semEstoque}
-                    loading={atualizando}
-                />
-            </View>
-        </SafeAreaView>
+        <View style={estilosTela.container}>
+            <FaixaMarca
+                titulo="Detalhes"
+                subtitulo="Confira as informações do produto"
+                topo={<BotaoIcone icone="chevron-back" tamanho={20} comFundo inverso descricao="Voltar" onPress={router.back} />}
+            />
+            {conteudo()}
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        paddingHorizontal: 20,
-        paddingTop: 20,
-        backgroundColor: "#F2F2F7",
-    },
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
     conteudo: {
-        paddingVertical: 16,
-        gap: 8,
+        padding: espaco.tela,
+        gap: espaco.md,
+    },
+    imagemBox: {
+        // why: na web larga a foto quadrada ficaria enorme; 480 mantém ela grande sem tomar a tela toda.
+        width: "100%",
+        maxWidth: 480,
+        alignSelf: "center",
+        borderRadius: raio.lg,
+        borderWidth: 1,
+        borderColor: cores.borda,
+        backgroundColor: cores.superficie,
+        overflow: "hidden",
     },
     imagem: {
         width: "100%",
         aspectRatio: 1,
-        borderRadius: 16,
-        backgroundColor: "#FFFFFF",
     },
-    categoria: {
-        marginTop: 8,
-        fontSize: 13,
-        fontWeight: "500",
-        color: "#8E8E93",
+    cartao: {
+        backgroundColor: cores.superficie,
+        borderRadius: raio.lg,
+        borderWidth: 1,
+        borderColor: cores.borda,
+        padding: espaco.lg,
+        gap: espaco.sm,
+    },
+    selo: {
+        alignSelf: "flex-start",
+        backgroundColor: cores.neutroAtivo,
+        paddingHorizontal: espaco.md,
+        paddingVertical: espaco.xs,
+        borderRadius: raio.pill,
+    },
+    seloTexto: {
+        fontSize: fonte.legenda,
+        fontWeight: "600",
+        color: cores.texto,
         textTransform: "capitalize",
     },
     nome: {
-        fontSize: 24,
-        fontWeight: "700",
-        color: "#1C1C1E",
+        fontSize: fonte.secao,
+        fontWeight: "800",
+        letterSpacing: -0.3,
+        color: cores.texto,
     },
     preco: {
-        fontSize: 22,
+        fontSize: fonte.secao,
         fontWeight: "700",
-        color: "#1C1C1E",
+        color: cores.texto,
     },
     estoque: {
-        fontSize: 14,
-        color: "#636366",
+        flexDirection: "row",
+        alignItems: "center",
+        gap: espaco.xs,
+    },
+    estoqueTexto: {
+        fontSize: fonte.pequeno,
+        fontWeight: "600",
+    },
+    tituloSecao: {
+        fontSize: fonte.corpo,
+        fontWeight: "700",
+        color: cores.texto,
     },
     descricao: {
-        marginTop: 8,
-        fontSize: 16,
+        fontSize: fonte.corpo,
         lineHeight: 24,
-        color: "#3A3A3C",
-    },
-    rodape: {
-        paddingVertical: 16,
-        borderTopWidth: StyleSheet.hairlineWidth,
-        borderTopColor: "#E5E5EA",
+        color: cores.textoSecundario,
     },
 });
