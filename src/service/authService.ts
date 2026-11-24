@@ -1,16 +1,22 @@
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { auth } from "../config/firebase";
+import apiClient from "@/api/apiClient";
+import { lerSessao, limparSessao, salvarSessao } from "@/api/sessaoStorage";
+import { NovoUsuario, Sessao, Usuario } from "@/types/usuario";
 
-
-export async function registerUser(email: string, password: string) {
-    await createUserWithEmailAndPassword(auth, email, password);
+export async function cadastro(novoUsuario: NovoUsuario): Promise<Usuario> {
+    const { data } = await apiClient.post<Usuario>("/usuarios", novoUsuario);
+    return data;
 }
 
-export async function loginUser(email: string, password: string) {
-    const user = await signInWithEmailAndPassword(auth, email, password);
-    return user;
+export async function login(email: string, senha: string): Promise<Sessao> {
+    const { data } = await apiClient.post<Sessao>("/login", { email, senha });
+    await salvarSessao(data);
+    return data;
 }
 
-export async function logoutUser() {
-    await signOut(auth);
+export async function logout(): Promise<void> {
+    await limparSessao();
+}
+
+export async function getSessaoSalva(): Promise<Sessao | null> {
+    return lerSessao();
 }

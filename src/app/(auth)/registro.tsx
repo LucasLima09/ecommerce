@@ -1,14 +1,15 @@
 import AuthInput, { CampoEmail } from "@/components/authInput";
 import TelaAuth from "@/components/telaAuth";
-import { registerUser } from "@/service/authService";
-import { getMensagemErroAuth } from "@/utils/errosFirebase";
-import { FirebaseError } from "firebase/app";
-import { SENHA_MIN, validarConfirmacaoSenha, validarEmail, validarSenha } from "@/utils/validacoes";
+import { useAuth } from "@/context/AuthContext";
+import { getMensagemErroApi } from "@/utils/errosApi";
+import { SENHA_MIN, validarConfirmacaoSenha, validarEmail, validarNome, validarSenha } from "@/utils/validacoes";
 import { useState } from "react";
 
-type Erros = { email?: string; password?: string; confirmPassword?: string; geral?: string };
+type Erros = { nome?: string; email?: string; password?: string; confirmPassword?: string; geral?: string };
 
 export default function RegisterScreen() {
+    const { cadastrar } = useAuth();
+    const [nome, setNome] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -17,12 +18,13 @@ export default function RegisterScreen() {
 
     function validar(): boolean {
         const novosErros: Erros = {
+            nome: validarNome(nome),
             email: validarEmail(email),
             password: validarSenha(password),
             confirmPassword: validarConfirmacaoSenha(password, confirmPassword),
         };
         setErros(novosErros);
-        return !novosErros.email && !novosErros.password && !novosErros.confirmPassword;
+        return !novosErros.nome && !novosErros.email && !novosErros.password && !novosErros.confirmPassword;
     }
 
     // limpa o erro do campo editado (e o erro geral) enquanto o usuário digita
@@ -35,16 +37,10 @@ export default function RegisterScreen() {
 
         setLoading(true);
         try {
-            await registerUser(email.trim(), password);
-            // sucesso: o Firebase já loga o usuário e o Stack.Protected redireciona
+            await cadastrar({ nome: nome.trim(), email: email.trim(), senha: password });
+            // sucesso: o cadastrar já faz login e o Stack.Protected redireciona
         } catch (error) {
-            const mensagem = getMensagemErroAuth(error);
-            // e-mail já cadastrado é erro do campo e-mail; o resto vai como erro geral
-            if (error instanceof FirebaseError && error.code === "auth/email-already-in-use") {
-                setErros({ email: mensagem });
-            } else {
-                setErros({ geral: mensagem });
-            }
+            setErros({ geral: getMensagemErroApi(error) });
         } finally {
             setLoading(false);
         }
@@ -62,6 +58,22 @@ export default function RegisterScreen() {
             rodapeLink="Entrar"
             rodapeHref="/"
         >
+            <AuthInput
+                label="Nome"
+                icon="person-outline"
+                placeholder="Seu nome"
+                value={nome}
+                onChangeText={(text) => {
+                    setNome(text);
+                    limparErro("nome");
+                }}
+                error={erros.nome}
+                autoCapitalize="words"
+                autoComplete="name"
+                textContentType="name"
+                editable={!loading}
+            />
+
             <CampoEmail
                 value={email}
                 onChangeText={(text) => {

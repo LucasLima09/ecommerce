@@ -37,10 +37,10 @@ export function useCarrinho() {
 }
 
 export function CarrinhoProvider({ children }: PropsWithChildren) {
-    const { user } = useAuth();
+    const { usuario } = useAuth();
     const { registrarCompra } = useHistorico();
-    // invariant: o uid do Firebase é o usuarioId da API, então cada conta tem o próprio carrinho.
-    const usuarioId = user?.uid ?? null;
+    // invariant: o id do usuário logado é o usuarioId da API, então cada conta tem o próprio carrinho.
+    const usuarioId = usuario ? String(usuario.id) : null;
 
     // invariant: o estado guarda de qual usuarioId ele é; se a conta muda, o carrinho anterior é ignorado na leitura.
     const [estado, setEstado] = useState<{ usuarioId: string; carrinho: Carrinho | null; erro: string | null } | null>(null);

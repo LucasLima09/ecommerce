@@ -1,5 +1,9 @@
 export const SENHA_MIN = 6;
 
+export function validarNome(nome: string): string | undefined {
+    if (!nome.trim()) return "Informe seu nome.";
+}
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function validarEmail(email: string): string | undefined {

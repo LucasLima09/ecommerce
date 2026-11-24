@@ -19,9 +19,9 @@ export default function RootLayout() {
 }
 
 function RootNavigator(){
-    const { user, loading } = useAuth();
+    const { usuario, loading } = useAuth();
 
-    // Enquanto o Firebase lê a sessão salva, mostra um loading.
+    // Enquanto o AsyncStorage lê a sessão salva, mostra um loading.
     // Assim a tela de login não "pisca" para quem já está logado.
     if (loading) {
         return (
@@ -34,14 +34,14 @@ function RootNavigator(){
     return(
         <Stack screenOptions={{ headerShown: false}}>
 
-            <Stack.Protected guard = {!!user} >
+            <Stack.Protected guard = {!!usuario} >
                 <Stack.Screen name="(tabs)" />
                 <Stack.Screen name="pagamento" />
                 {/* why: depois de comprar, o gesto de voltar levaria à tela de pagamento de um carrinho já vazio */}
                 <Stack.Screen name="pedido/[id]" options={{ gestureEnabled: false }} />
             </Stack.Protected>
 
-            <Stack.Protected guard = {!user} >
+            <Stack.Protected guard = {!usuario} >
                 <Stack.Screen name="(auth)" />
             </Stack.Protected>
 

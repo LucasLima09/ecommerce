@@ -5,11 +5,11 @@ import { getCategorias } from "@/service/categoriasService";
 import { Erro, EstadoVazio } from "@/components/estadoTela";
 import EsqueletoGrade from "@/components/esqueletoProduto";
 import ProdutoCard from "@/components/produtoCard";
-import { logoutUser } from "@/service/authService";
 import { getProdutos } from "@/service/produtosService";
 import { Categoria, Produto } from "@/types/produto";
 import { useEffect, useState } from "react";
 import { useCarrinho } from "@/context/CarrinhoContext";
+import { useAuth } from "@/context/AuthContext";
 import { estilosTela } from "@/theme/estilos";
 import { entradaItem } from "@/utils/animacoes";
 import { router } from "expo-router";
@@ -34,6 +34,7 @@ export default function Home() {
     // incrementar dispara uma nova busca (botão "Tentar novamente")
     const [tentativa, setTentativa] = useState(0);
     const { adicionar } = useCarrinho();
+    const { logout } = useAuth();
     const [textoBusca, setTextoBusca] = useState("");
     const [busca, setBusca] = useState("");
     const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -120,7 +121,7 @@ export default function Home() {
                 topo={
                     <>
                         <LogoBranco style={styles.logo} />
-                        <BotaoIcone icone="log-out-outline" tamanho={20} comFundo inverso descricao="Sair da conta" onPress={logoutUser} />
+                        <BotaoIcone icone="log-out-outline" tamanho={20} comFundo inverso descricao="Sair da conta" onPress={logout} />
                     </>
                 }
             >

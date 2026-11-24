@@ -38,8 +38,8 @@ function mesclar(novas: Compra[], antigas: Compra[]) {
 }
 
 export function HistoricoProvider({ children }: PropsWithChildren) {
-    const { user } = useAuth();
-    const usuarioId = user?.uid ?? null;
+    const { usuario } = useAuth();
+    const usuarioId = usuario ? String(usuario.id) : null;
 
     // invariant: o estado guarda de qual usuarioId ele é; se a conta muda, o histórico anterior é ignorado na leitura.
     const [estado, setEstado] = useState<{ usuarioId: string; compras: Compra[] } | null>(null);

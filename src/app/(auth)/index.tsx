@@ -1,13 +1,14 @@
 import AuthInput, { CampoEmail } from "@/components/authInput";
 import TelaAuth from "@/components/telaAuth";
-import { loginUser } from "@/service/authService";
-import { getMensagemErroAuth } from "@/utils/errosFirebase";
+import { useAuth } from "@/context/AuthContext";
+import { getMensagemErroApi } from "@/utils/errosApi";
 import { validarEmail, validarSenha } from "@/utils/validacoes";
 import { useState } from "react";
 
 type Erros = { email?: string; password?: string; geral?: string };
 
 export default function LoginScreen() {
+    const { login } = useAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
@@ -28,10 +29,10 @@ export default function LoginScreen() {
 
         setLoading(true);
         try {
-            await loginUser(email.trim(), password);
+            await login(email.trim(), password);
             // sucesso: o Stack.Protected redireciona sozinho para (tabs)
         } catch (error) {
-            setErros({ geral: getMensagemErroAuth(error) });
+            setErros({ geral: getMensagemErroApi(error) });
         } finally {
             setLoading(false);
         }
