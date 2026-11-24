@@ -1,4 +1,3 @@
-import { useHover } from "@/hooks/useHover";
 import BotaoIcone from "@/components/botaoIcone";
 import { cores, espaco, fonte, raio } from "@/theme";
 import { Categoria } from "@/types/produto";
@@ -77,15 +76,11 @@ export default function FiltroCategorias({ categorias, selecionada, onSelecionar
 }
 
 function Chip({ nome, ativa, onPress }: { nome: string; ativa: boolean; onPress: () => void }) {
-    const { hover, hoverProps } = useHover();
-
     return (
         <Pressable
             onPress={onPress}
-            {...hoverProps}
             style={({ pressed }) => [
                 styles.chip,
-                hover && !ativa && styles.chipHover,
                 ativa && styles.chipAtivo,
                 pressed && styles.pressionado,
             ]}
@@ -120,9 +115,6 @@ const styles = StyleSheet.create({
         backgroundColor: cores.superficie,
         borderWidth: 1,
         borderColor: cores.borda,
-    },
-    chipHover: {
-        borderColor: cores.bordaHover,
     },
     chipAtivo: {
         backgroundColor: cores.primaria,

@@ -1,4 +1,3 @@
-import { useHover } from "@/hooks/useHover";
 import { cores, raio } from "@/theme";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { ComponentProps } from "react";
@@ -29,7 +28,6 @@ export default function BotaoIcone({
     disabled = false,
     folga = 10,
 }: BotaoIconeProps) {
-    const { hover, hoverProps } = useHover();
     const corIcone = cor ?? (inverso ? cores.primariaTexto : cores.texto);
 
     return (
@@ -37,11 +35,9 @@ export default function BotaoIcone({
             onPress={onPress}
             disabled={disabled}
             hitSlop={folga}
-            {...hoverProps}
             style={({ pressed }) => [
                 comFundo && styles.fundo,
                 comFundo && inverso && styles.fundoInverso,
-                hover && !disabled && (inverso ? styles.hoverInverso : styles.hover),
                 (pressed || disabled) && styles.apagado,
             ]}
             accessibilityRole="button"
@@ -69,15 +65,6 @@ const styles = StyleSheet.create({
         height: 44,
         backgroundColor: "transparent",
         borderColor: cores.bordaInversa,
-    },
-    hover: {
-        borderColor: cores.bordaHover,
-        backgroundColor: cores.neutroAtivo,
-        borderRadius: raio.pill,
-    },
-    hoverInverso: {
-        borderColor: cores.primariaTexto,
-        backgroundColor: cores.superficieInversaHover,
     },
     apagado: {
         opacity: 0.5,

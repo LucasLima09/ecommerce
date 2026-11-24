@@ -1,4 +1,3 @@
-import { useHover } from "@/hooks/useHover";
 import { cores, espaco, fonte, raio } from "@/theme";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { FormaPagamento, FormaPagamentoId } from "@/types/compra";
@@ -19,16 +18,12 @@ type OpcaoPagamentoProps = {
 };
 
 export default function OpcaoPagamento({ forma, selecionada, onSelecionar, desabilitado }: OpcaoPagamentoProps) {
-    const { hover, hoverProps } = useHover();
-
     return (
         <Pressable
             onPress={() => onSelecionar(forma.id)}
             disabled={desabilitado}
-            {...hoverProps}
             style={({ pressed }) => [
                 styles.container,
-                hover && !selecionada && styles.hover,
                 selecionada && styles.selecionada,
                 pressed && styles.pressionada,
             ]}
@@ -47,7 +42,7 @@ export default function OpcaoPagamento({ forma, selecionada, onSelecionar, desab
             <Ionicons
                 name={selecionada ? "checkmark-circle" : "ellipse-outline"}
                 size={24}
-                color={selecionada ? cores.texto : cores.bordaHover}
+                color={selecionada ? cores.texto : cores.bordaForte}
             />
         </Pressable>
     );
@@ -63,9 +58,6 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: cores.borda,
         backgroundColor: cores.superficie,
-    },
-    hover: {
-        borderColor: cores.bordaHover,
     },
     selecionada: {
         borderColor: cores.primaria,

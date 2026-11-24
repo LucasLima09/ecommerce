@@ -1,5 +1,4 @@
-import { useHover } from "@/hooks/useHover";
-import { cores, fonte, raio, sombra } from "@/theme";
+import { cores, fonte, raio } from "@/theme";
 import { ActivityIndicator, Pressable, StyleSheet, Text } from "react-native";
 
 type BotaoProps = {
@@ -11,17 +10,14 @@ type BotaoProps = {
 
 export default function Botao({ title, onPress, loading, disabled }: BotaoProps) {
     const inactive = disabled || loading;
-    const { hover, hoverProps } = useHover();
 
     return (
         <Pressable
             style={({ pressed }) => [
                 styles.button,
                 inactive && styles.buttonDisabled,
-                hover && !inactive && styles.buttonHover,
                 pressed && !inactive && styles.buttonPressed,
             ]}
-            {...hoverProps}
             onPress={onPress}
             disabled={inactive}
             accessibilityRole="button"
@@ -44,11 +40,6 @@ const styles = StyleSheet.create({
         borderRadius: raio.md,
         alignItems: "center",
         justifyContent: "center",
-    },
-    buttonHover: {
-        backgroundColor: cores.primariaHover,
-        transform: [{ translateY: -1 }],
-        ...sombra.suave,
     },
     buttonPressed: {
         opacity: 0.85,

@@ -8,9 +8,8 @@ export const cores = {
     textoSecundario: "#5E605A",
     textoSuave: "#8A8C85",
     borda: "#E3E4DF",
-    bordaHover: "#BFC0BA",
+    bordaForte: "#BFC0BA",
     primaria: "#171717",
-    primariaHover: "#2B2B2B",
     primariaTexto: "#FFFFFF",
     desabilitado: "#C9CAC4",
     sucesso: "#2F6B4F",
@@ -22,7 +21,7 @@ export const cores = {
     // why: textos e contornos sobre o fundo preto da marca.
     textoInverso: "rgba(255,255,255,0.68)",
     bordaInversa: "rgba(255,255,255,0.28)",
-    superficieInversaHover: "rgba(255,255,255,0.1)",
+    superficieInversaAtiva: "rgba(255,255,255,0.1)",
 } as const;
 
 export const espaco = {

@@ -1,5 +1,4 @@
-import { useHover } from "@/hooks/useHover";
-import { cores, espaco, fonte, raio, sombra } from "@/theme";
+import { cores, espaco, fonte, raio } from "@/theme";
 import { Produto } from "@/types/produto";
 import { formatarPreco } from "@/utils/formatarPreco";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -23,8 +22,6 @@ const DURACAO_CONFIRMACAO = 1600;
 
 export default function ProdutoCard({ produto, nomeCategoria, onAddToCart, onPress }: ProdutoCardProps) {
     const semEstoque = produto.estoque <= 0;
-    const card = useHover();
-    const botao = useHover();
     const [estado, setEstado] = useState<EstadoBotao>("parado");
 
     useEffect(() => {
@@ -43,10 +40,7 @@ export default function ProdutoCard({ produto, nomeCategoria, onAddToCart, onPre
     const bloqueado = semEstoque || estado === "adicionando";
 
     return (
-        <View
-            style={[styles.card, card.hover && styles.cardHover]}
-            {...card.pointerProps}
-        >
+        <View style={styles.card}>
             {/* hazard: no navegador o Pressable vira <button>; envolver o botão de adicionar geraria <button> dentro de <button>. */}
             <Pressable
                 style={({ pressed }) => pressed && styles.cardPressed}
@@ -57,7 +51,7 @@ export default function ProdutoCard({ produto, nomeCategoria, onAddToCart, onPre
                 <View style={styles.imagemBox}>
                     <Image
                         source={{ uri: produto.imagem }}
-                        style={[styles.image, card.hover && styles.imageHover]}
+                        style={styles.image}
                         contentFit="cover"
                         transition={200}
                     />
@@ -90,7 +84,6 @@ export default function ProdutoCard({ produto, nomeCategoria, onAddToCart, onPre
                 <Pressable
                     style={({ pressed }) => [
                         styles.button,
-                        botao.hover && !bloqueado && styles.buttonHover,
                         estado === "adicionado" && styles.buttonSucesso,
                         semEstoque && styles.buttonDisabled,
                         pressed && !bloqueado && styles.buttonPressed,
@@ -98,7 +91,6 @@ export default function ProdutoCard({ produto, nomeCategoria, onAddToCart, onPre
                     onPress={adicionar}
                     // why: o círculo tem 40; o hitSlop leva a área de toque acima dos 44 recomendados.
                     hitSlop={4}
-                    {...botao.hoverProps}
                     disabled={bloqueado}
                     accessibilityRole="button"
                     accessibilityState={{ disabled: bloqueado, busy: estado === "adicionando" }}
@@ -134,11 +126,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: cores.borda,
     },
-    cardHover: {
-        borderColor: cores.bordaHover,
-        transform: [{ translateY: -2 }],
-        ...sombra.suave,
-    },
     cardPressed: {
         opacity: 0.9,
     },
@@ -150,9 +137,6 @@ const styles = StyleSheet.create({
         width: "100%",
         // invariant: todas as fotos quadradas, para os cards ficarem alinhados na grade.
         aspectRatio: 1,
-    },
-    imageHover: {
-        transform: [{ scale: 1.04 }],
     },
     selos: {
         position: "absolute",
@@ -223,10 +207,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: cores.primaria,
-    },
-    buttonHover: {
-        backgroundColor: cores.primariaHover,
-        transform: [{ scale: 1.06 }],
     },
     buttonSucesso: {
         backgroundColor: cores.sucesso,

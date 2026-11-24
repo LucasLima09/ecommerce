@@ -1,4 +1,3 @@
-import { useHover } from "@/hooks/useHover";
 import { cores, espaco, fonte, raio, TOQUE_MIN } from "@/theme";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useState } from "react";
@@ -12,7 +11,6 @@ type AuthInputProps = TextInputProps & {
 
 export default function AuthInput({ label, icon, error, secureTextEntry, ...rest }: AuthInputProps) {
     const [focused, setFocused] = useState(false);
-    const { hover, pointerProps } = useHover();
     const [hidden, setHidden] = useState(true);
     const isPassword = !!secureTextEntry;
     const corIcone = error ? cores.erro : focused ? cores.texto : cores.textoSuave;
@@ -21,10 +19,7 @@ export default function AuthInput({ label, icon, error, secureTextEntry, ...rest
         <View style={styles.wrapper}>
             <Text style={styles.label}>{label}</Text>
 
-            <View
-                style={[styles.field, hover && styles.fieldHover, focused && styles.fieldFocused, !!error && styles.fieldError]}
-                {...pointerProps}
-            >
+            <View style={[styles.field, focused && styles.fieldFocused, !!error && styles.fieldError]}>
                 <Ionicons name={icon} size={20} color={corIcone} />
 
                 <TextInput
@@ -83,9 +78,6 @@ const styles = StyleSheet.create({
         height: 48,
         // why: o preenchimento automático da web pode alargar o input e cobrir a borda direita do campo.
         overflow: "hidden",
-    },
-    fieldHover: {
-        borderColor: cores.bordaHover,
     },
     fieldFocused: {
         borderColor: cores.texto,

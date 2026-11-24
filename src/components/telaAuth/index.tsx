@@ -1,4 +1,3 @@
-import { useHover } from "@/hooks/useHover";
 import Botao from "@/components/botao";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { cores, espaco, fonte, raio, TOQUE_MIN } from "@/theme";
@@ -37,7 +36,6 @@ export default function TelaAuth({ titulo, subtitulo, erroGeral, children, acao,
     const insets = useSafeAreaInsets();
     const { width, height } = useWindowDimensions();
     const m = height < ALTURA_COMPACTA ? MEDIDAS.compacta : MEDIDAS.normal;
-    const link = useHover();
 
     // why: o slogan acompanha a largura da tela, sem ficar minúsculo no celular nem gigante na web.
     const tamanhoSlogan = Math.min(30, Math.max(22, width * 0.065));
@@ -105,10 +103,9 @@ export default function TelaAuth({ titulo, subtitulo, erroGeral, children, acao,
                                     style={styles.link}
                                     accessibilityRole="link"
                                     hitSlop={4}
-                                    {...link.hoverProps}
                                 >
                                     {({ pressed }) => (
-                                        <View style={[styles.linkConteudo, (link.hover || pressed) && styles.linkAtivo]}>
+                                        <View style={[styles.linkConteudo, pressed && styles.linkAtivo]}>
                                             <Text style={styles.linkTexto}>{rodapeLink}</Text>
                                             <Ionicons name="arrow-forward" size={16} color={cores.primariaTexto} />
                                         </View>
@@ -222,7 +219,7 @@ const styles = StyleSheet.create({
         borderColor: cores.bordaInversa,
     },
     linkAtivo: {
-        backgroundColor: cores.superficieInversaHover,
+        backgroundColor: cores.superficieInversaAtiva,
         borderColor: cores.primariaTexto,
     },
     linkTexto: {

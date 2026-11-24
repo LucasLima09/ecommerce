@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
         borderColor: "transparent",
     },
     campoFocado: {
-        borderColor: cores.bordaHover,
+        borderColor: cores.bordaForte,
     },
     input: {
         flex: 1,
