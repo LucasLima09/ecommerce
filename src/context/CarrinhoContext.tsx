@@ -116,7 +116,7 @@ export function CarrinhoProvider({ children }: PropsWithChildren) {
         if (!usuarioId) throw new Error("Faça login para finalizar a compra.");
         setAtualizando(true);
         try {
-            const compra = await finalizarCompra({ usuarioId: String(usuarioId), formaPagamento });
+            const compra = await finalizarCompra({ formaPagamento });
             registrarCompra(compra);
             // why: a API esvazia o carrinho ao registrar a compra; sem isso o badge e a tela do carrinho mostrariam os itens antigos.
             setEstado({ usuarioId, carrinho: { usuarioId, itens: [], quantidadeTotal: 0, total: 0 }, erro: null });

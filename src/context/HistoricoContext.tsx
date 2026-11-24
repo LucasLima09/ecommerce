@@ -66,7 +66,7 @@ export function HistoricoProvider({ children }: PropsWithChildren) {
     }, [usuarioId]);
 
     function registrarCompra(compra: Compra) {
-        const uid = compra.usuarioId;
+        const uid = String(compra.usuarioId);
         setEstado((prev) => ({
             usuarioId: uid,
             compras: mesclar([compra], prev?.usuarioId === uid ? prev.compras : []),
