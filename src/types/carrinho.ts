@@ -1,4 +1,5 @@
 import { Produto } from "./produto";
+import { Usuario } from "./usuario";
 
 export type ItemCarrinho = {
     produtoId: Produto["id"];
@@ -10,19 +11,19 @@ export type ItemCarrinho = {
 };
 
 export type Carrinho = {
-    usuarioId: string;
+    usuarioId: Usuario["id"];
     itens: ItemCarrinho[];
     quantidadeTotal: number;
     total: number; // em centavos
 };
 
-// Body de POST /carrinho/:usuarioId/itens
+// invariant: corpo enviado no POST /carrinho/itens
 export type AdicionarItemCarrinho = {
     produtoId: Produto["id"];
     quantidade: number;
 };
 
-// Body de PUT /carrinho/:usuarioId/itens/:produtoId
+// invariant: corpo enviado no PUT /carrinho/itens/:produtoId
 export type AtualizarItemCarrinho = {
     quantidade: number;
 };

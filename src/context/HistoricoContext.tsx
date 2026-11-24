@@ -1,6 +1,6 @@
 import { useAuth } from "@/context/AuthContext";
+import { getCompras } from "@/service/comprasService";
 import { Compra } from "@/types/compra";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createContext, PropsWithChildren, use, useEffect, useState } from "react";
 
 type HistoricoContextType = {
@@ -18,31 +18,26 @@ export function useHistorico() {
     return value;
 }
 
-// invariant: uma chave por usuário, para que trocar de conta não mostre as compras de outra pessoa.
-const chave = (usuarioId: string) => `historico:${usuarioId}`;
+// why: a API não garante a ordem da lista; o id maior é a compra mais recente.
+function maisRecentePrimeiro(compras: Compra[]) {
+    return [...compras].sort((a, b) => b.id - a.id);
+}
 
-async function lerHistorico(usuarioId: string): Promise<Compra[]> {
+async function buscarCompras() {
     try {
-        const salvo = await AsyncStorage.getItem(chave(usuarioId));
-        return salvo ? (JSON.parse(salvo) as Compra[]) : [];
+        return maisRecentePrimeiro(await getCompras());
     } catch {
-        // why: um histórico corrompido ou ilegível não pode travar o app; começa vazio.
+        // why: se a API falhar, a aba mostra o histórico vazio em vez de travar o app.
         return [];
     }
 }
 
-// why: junta duas listas sem duplicar pedidos, mantendo a mais recente primeiro.
-function mesclar(novas: Compra[], antigas: Compra[]) {
-    const ids = new Set(novas.map((c) => c.id));
-    return [...novas, ...antigas.filter((c) => !ids.has(c.id))];
-}
-
 export function HistoricoProvider({ children }: PropsWithChildren) {
     const { usuario } = useAuth();
-    const usuarioId = usuario ? String(usuario.id) : null;
+    const usuarioId = usuario?.id ?? null;
 
     // invariant: o estado guarda de qual usuarioId ele é; se a conta muda, o histórico anterior é ignorado na leitura.
-    const [estado, setEstado] = useState<{ usuarioId: string; compras: Compra[] } | null>(null);
+    const [estado, setEstado] = useState<{ usuarioId: number; compras: Compra[] } | null>(null);
 
     const atual = usuarioId && estado?.usuarioId === usuarioId ? estado : null;
     const compras = atual?.compras ?? [];
@@ -50,32 +45,22 @@ export function HistoricoProvider({ children }: PropsWithChildren) {
 
     useEffect(() => {
         if (!usuarioId) return;
-        // hazard: sem essa flag, a leitura de uma conta anterior pode chegar depois e sobrescrever o histórico atual.
+        // hazard: sem essa flag, a resposta de uma conta anterior pode chegar depois e sobrescrever o histórico atual.
         let ativo = true;
-        lerHistorico(usuarioId).then((salvas) => {
-            if (!ativo) return;
-            // why: se uma compra foi registrada antes da leitura terminar, ela não pode sumir.
-            setEstado((prev) => ({
-                usuarioId,
-                compras: prev?.usuarioId === usuarioId ? mesclar(prev.compras, salvas) : salvas,
-            }));
+        buscarCompras().then((lista) => {
+            if (ativo) setEstado({ usuarioId, compras: lista });
         });
         return () => {
             ativo = false;
         };
     }, [usuarioId]);
 
+    // why: a compra recém-finalizada entra no topo da lista sem precisar buscar tudo de novo na API.
     function registrarCompra(compra: Compra) {
-        const uid = compra.usuarioId;
         setEstado((prev) => ({
-            usuarioId: uid,
-            compras: mesclar([compra], prev?.usuarioId === uid ? prev.compras : []),
+            usuarioId: compra.usuarioId,
+            compras: [compra, ...(prev?.usuarioId === compra.usuarioId ? prev.compras : [])],
         }));
-        // why: lê o que está salvo antes de gravar, para não apagar compras caso o estado ainda não tenha carregado.
-        // hazard: falha ao gravar não pode quebrar a finalização da compra, que já foi confirmada pela API.
-        lerHistorico(uid)
-            .then((salvas) => AsyncStorage.setItem(chave(uid), JSON.stringify(mesclar([compra], salvas))))
-            .catch((e) => console.warn("Não foi possível salvar o histórico de compras.", e));
     }
 
     return <HistoricoContext value={{ compras, loading, registrarCompra }}>{children}</HistoricoContext>;
