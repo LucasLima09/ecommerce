@@ -1,3 +1,4 @@
+import { definirAoExpirarSessao } from "@/api/apiClient";
 import * as authService from "@/service/authService";
 import { NovoUsuario, Usuario } from "@/types/usuario";
 import { createContext, PropsWithChildren, use, useEffect, useState } from "react";
@@ -31,6 +32,16 @@ export function AuthProvider({ children }: PropsWithChildren) {
             setToken(sessao?.token ?? null);
             setLoading(false);
         });
+    }, []);
+
+    // Quando a API recusa o token (401), o apiClient apaga a sessão e avisa aqui;
+    // zerar o usuário faz o Stack.Protected levar para a tela de login.
+    useEffect(() => {
+        definirAoExpirarSessao(() => {
+            setUsuario(null);
+            setToken(null);
+        });
+        return () => definirAoExpirarSessao(null);
     }, []);
 
     async function login(email: string, senha: string) {
