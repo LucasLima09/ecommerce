@@ -3,6 +3,7 @@ import { CarrinhoProvider } from "@/context/CarrinhoContext";
 import { HistoricoProvider } from "@/context/HistoricoContext";
 import { Stack } from "expo-router";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { cores } from "@/theme";
 
 export default function RootLayout() {
 
@@ -26,7 +27,7 @@ function RootNavigator(){
     if (loading) {
         return (
             <View style={styles.loading}>
-                <ActivityIndicator size="large" color="#1C1C1E" />
+                <ActivityIndicator size="large" color={cores.texto} />
             </View>
         );
     }
@@ -54,6 +55,6 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#F2F2F7",
+        backgroundColor: cores.fundo,
     },
 });
