@@ -39,11 +39,11 @@ export function useCarrinho() {
 export function CarrinhoProvider({ children }: PropsWithChildren) {
     const { usuario } = useAuth();
     const { registrarCompra } = useHistorico();
-    // invariant: o id do usuário logado é o usuarioId da API, então cada conta tem o próprio carrinho.
-    const usuarioId = usuario ? String(usuario.id) : null;
+    // invariant: o id do usuário logado identifica de qual conta é o carrinho guardado no estado.
+    const usuarioId = usuario?.id ?? null;
 
     // invariant: o estado guarda de qual usuarioId ele é; se a conta muda, o carrinho anterior é ignorado na leitura.
-    const [estado, setEstado] = useState<{ usuarioId: string; carrinho: Carrinho | null; erro: string | null } | null>(null);
+    const [estado, setEstado] = useState<{ usuarioId: number; carrinho: Carrinho | null; erro: string | null } | null>(null);
     const [recarregando, setRecarregando] = useState(false);
     const [atualizando, setAtualizando] = useState(false);
 
@@ -52,9 +52,9 @@ export function CarrinhoProvider({ children }: PropsWithChildren) {
     const erro = atual?.erro ?? null;
     const loading = !!usuarioId && (atual === null || recarregando);
 
-    async function buscar(uid: string) {
+    async function buscar(uid: number) {
         try {
-            return { usuarioId: uid, carrinho: await getCarrinho(uid), erro: null };
+            return { usuarioId: uid, carrinho: await getCarrinho(), erro: null };
         } catch (e) {
             return { usuarioId: uid, carrinho: null, erro: getMensagemErroApi(e, "Não foi possível carregar o carrinho.") };
         }
@@ -80,11 +80,11 @@ export function CarrinhoProvider({ children }: PropsWithChildren) {
     }
 
     // why: as rotas que alteram o carrinho já devolvem o carrinho completo, então não é preciso um GET extra.
-    async function executar(acao: (uid: string) => Promise<Carrinho>, mensagemPadrao: string) {
+    async function executar(acao: () => Promise<Carrinho>, mensagemPadrao: string) {
         if (!usuarioId) throw new Error("Faça login para usar o carrinho.");
         setAtualizando(true);
         try {
-            setEstado({ usuarioId, carrinho: await acao(usuarioId), erro: null });
+            setEstado({ usuarioId, carrinho: await acao(), erro: null });
         } catch (e) {
             throw new Error(getMensagemErroApi(e, mensagemPadrao));
         } finally {
@@ -94,20 +94,20 @@ export function CarrinhoProvider({ children }: PropsWithChildren) {
 
     function adicionar(produtoId: Produto["id"], quantidade = 1) {
         return executar(
-            (uid) => addItemCarrinho(uid, { produtoId, quantidade }),
+            () => addItemCarrinho({ produtoId, quantidade }),
             "Não foi possível adicionar o produto ao carrinho.",
         );
     }
 
     function remover(produtoId: Produto["id"]) {
-        return executar((uid) => removerItemCarrinho(uid, produtoId), "Não foi possível remover o item.");
+        return executar(() => removerItemCarrinho(produtoId), "Não foi possível remover o item.");
     }
 
     function alterarQuantidade(produtoId: Produto["id"], quantidade: number) {
         // why: a API só aceita quantidade >= 1 no PUT; diminuir a partir de 1 remove o item.
         if (quantidade < 1) return remover(produtoId);
         return executar(
-            (uid) => editarItemCarrinho(uid, produtoId, { quantidade }),
+            () => editarItemCarrinho(produtoId, { quantidade }),
             "Não foi possível alterar a quantidade.",
         );
     }
@@ -116,7 +116,7 @@ export function CarrinhoProvider({ children }: PropsWithChildren) {
         if (!usuarioId) throw new Error("Faça login para finalizar a compra.");
         setAtualizando(true);
         try {
-            const compra = await finalizarCompra({ usuarioId, formaPagamento });
+            const compra = await finalizarCompra({ formaPagamento });
             registrarCompra(compra);
             // why: a API esvazia o carrinho ao registrar a compra; sem isso o badge e a tela do carrinho mostrariam os itens antigos.
             setEstado({ usuarioId, carrinho: { usuarioId, itens: [], quantidadeTotal: 0, total: 0 }, erro: null });

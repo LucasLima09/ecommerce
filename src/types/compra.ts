@@ -1,4 +1,5 @@
 import { ItemCarrinho } from "./carrinho";
+import { Usuario } from "./usuario";
 
 export type FormaPagamentoId = "pix" | "cartao" | "boleto";
 
@@ -12,7 +13,7 @@ export type StatusCompra = "confirmada";
 
 export type Compra = {
     id: number;
-    usuarioId: string;
+    usuarioId: Usuario["id"];
     itens: ItemCarrinho[];
     quantidadeTotal: number;
     total: number; // em centavos
@@ -24,6 +25,5 @@ export type Compra = {
 // Body de POST /compras — itens, total, id, status e data são gerados pela API
 // a partir do carrinho do usuário.
 export type NovaCompra = {
-    usuarioId: string;
     formaPagamento: FormaPagamentoId;
 };
